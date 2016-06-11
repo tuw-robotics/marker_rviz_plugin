@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(tuw_rviz_plugins)
+project(marker_rviz_plugin)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -7,7 +7,7 @@ project(tuw_rviz_plugins)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rviz
-  sensor_msgs
+  marker_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -163,7 +163,7 @@ set(SOURCE_FILES
 
 ## An rviz plugin is just a shared library, so here we declare the
 ## library to be called ``${PROJECT_NAME}`` (which is
-## "tuw_rviz_plugins", or whatever your version of this project
+## "marker_rviz_plugin", or whatever your version of this project
 ## is called) and specify the list of source files we collected above
 ## in ``${SOURCE_FILES}``.
 add_library(${PROJECT_NAME} ${SOURCE_FILES})
@@ -177,10 +177,10 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 ## the ``find_package(Qt4 ...)`` line above, and with whatever libraries
 ## catkin has included.
 ##
-## Although this puts "tuw_rviz_plugins_tutorials" (or whatever you have
+## Although this puts "marker_rviz_plugin_tutorials" (or whatever you have
 ## called the project) as the name of the library, cmake knows it is a
 ## library and names the actual file something like
-## "libtuw_rviz_plugins.so", or whatever is appropriate for your
+## "libmarker_rviz_plugin.so", or whatever is appropriate for your
 ## particular OS.
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${catkin_LIBRARIES})
 

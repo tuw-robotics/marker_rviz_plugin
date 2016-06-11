@@ -41,7 +41,7 @@
 #include "display_marker_detection/visual_marker_detection.h"
 #include "display_marker_detection/display_marker_detection.h"
 
-namespace tuw_rviz_plugins {
+namespace marker_rviz_plugin {
 
 // The constructor must have no arguments, so we can't give the
 // constructor the parameters it needs to fully initialize.
@@ -162,10 +162,10 @@ void DisplayMarkerDetection::processMessage ( const marker_msgs::MarkerDetection
     visuals_.push_back ( visual );
 }
 
-} // end namespace tuw_rviz_plugins
+} // end namespace marker_rviz_plugin
 
 // Tell pluginlib about this class.  It is important to do this in
 // global scope, outside our package's namespace.
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS ( tuw_rviz_plugins::DisplayMarkerDetection,rviz::Display )
+PLUGINLIB_EXPORT_CLASS ( marker_rviz_plugin::DisplayMarkerDetection,rviz::Display )
 // END_TUTORIAL

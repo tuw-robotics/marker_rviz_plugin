@@ -44,7 +44,7 @@ namespace rviz
 class Shape;
 }
 
-namespace tuw_rviz_plugins
+namespace marker_rviz_plugin
 {
 
 // Declare the visual class for this display.

@@ -33,7 +33,7 @@
 
 #include "display_marker_detection/visual_marker_detection.h"
 
-namespace tuw_rviz_plugins {
+namespace marker_rviz_plugin {
 
 VisualMarkerDetection::VisualMarkerDetection ( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node ) {
     scene_manager_ = scene_manager;
@@ -119,5 +119,5 @@ void VisualMarkerDetection::setScale ( float scale ) {
     scale_ = scale;
 }
 
-} // end namespace tuw_rviz_plugins
+} // end namespace marker_rviz_plugin
 

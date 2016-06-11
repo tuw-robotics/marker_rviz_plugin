@@ -54,7 +54,7 @@ class IntProperty;
 
 // All the source in this plugin is in its own namespace.  This is not
 // required but is good practice.
-namespace tuw_rviz_plugins
+namespace marker_rviz_plugin
 {
 
 class VisualMarkerDetection;
