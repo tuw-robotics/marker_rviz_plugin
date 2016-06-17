@@ -27,10 +27,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef VISUAL_MARKER_DETECTION_H
-#define VISUAL_MARKER_DETECTION_H
+#ifndef MARKER_WITH_COVARIANCE_VISUAL_H
+#define MARKER_WITH_COVARIANCE_VISUAL_H
 
-#include <marker_msgs/MarkerDetection.h>
+#include <marker_msgs/MarkerWithCovarianceStamped.h>
+#include <rviz/ogre_helpers/arrow.h>
 #include <rviz/ogre_helpers/shape.h>
 
 namespace Ogre
@@ -41,6 +42,7 @@ class Quaternion;
 
 namespace rviz
 {
+class Arrow;
 class Shape;
 }
 
@@ -48,42 +50,45 @@ namespace marker_rviz_plugin
 {
 
 // Declare the visual class for this display.
-class VisualMarkerDetection
+class MarkerWithCovarianceVisual
 {
 public:
   // Constructor.  Creates the visual stuff and puts it into the
   // scene, but in an unconfigured state.
-  VisualMarkerDetection( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node );
+  MarkerWithCovarianceVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node );
 
   // Destructor.  Removes the visual stuff from the scene.
-  virtual ~VisualMarkerDetection();
+  virtual ~MarkerWithCovarianceVisual();
 
   // Configure the visual to show the data in the message.
-  void setMessage( const marker_msgs::MarkerDetection::ConstPtr& msg );
+  void setMessage( const marker_msgs::MarkerWithCovarianceStamped::ConstPtr& msg );
 
   // Set the pose of the coordinate frame the message refers to.
   // These could be done inside setMessage(), but that would require
   // calls to FrameManager and error handling inside setMessage(),
-  // which doesn't seem as clean.  This way VisualMarkerDetection is
+  // which doesn't seem as clean.  This way MarkerWithCovarianceVisual is
   // only responsible for visualization.
   void setFramePosition( const Ogre::Vector3& position );
   void setFrameOrientation( const Ogre::Quaternion& orientation );
 
-  // Set the color of the visual, which is an user-editable
-  // parameter and therefore don't come from the FiducialDetection message.
-  void setColor( Ogre::ColourValue color );
-  
-  // Set the shape of the visual, which is an user-editable
-  // parameter and therefore don't come from the FiducialDetection message.
-  void setShape( rviz::Shape::Type shape_type );
-  
   // Set the scale of the visual, which is an user-editable
-  // parameter and therefore don't come from the FiducialDetection message.
-  void setScale( float scale );
+  // parameter and therefore don't come from the MarkerWithCovarianceStamped message.
+  void setScalePose( float scale );
+
+  // Set the color of the visual's Pose, which is an user-editable
+  // parameter and therefore don't come from the MarkerWithCovarianceStamped message.
+  void setColorPose( Ogre::ColourValue color );
+
+  // Set the color of the visual's variance, which is an user-editable
+  // parameter and therefore don't come from the MarkerWithCovarianceStamped message.
+  void setColorVariance( Ogre::ColourValue color );
 
 private:
-  // The objects implementing the actual shape
-  std::vector<boost::shared_ptr<rviz::Shape> > markers_;
+  // The object implementing the actual pose shape
+  boost::shared_ptr<rviz::Arrow> pose_;
+
+  // The object implementing the actual variance shape
+  boost::shared_ptr<rviz::Shape> variance_;
 
   // A SceneNode whose pose is set to match the coordinate frame of
   // the Imu message header.
@@ -93,16 +98,16 @@ private:
   // destroy the ``frame_node_``.
   Ogre::SceneManager* scene_manager_;
 
-  // The Shape object's color
-  Ogre::ColourValue color_;
-  
-  // The Shape object's shape type
-  rviz::Shape::Type shape_type_;
-  
-  // The Shape object's scale
-  float scale_;
+  // The pose Shape object's scale
+  float scale_pose_;
+
+  // The pose Shape object's color
+  Ogre::ColourValue color_pose_;
+
+  // The variance Shape object's color
+  Ogre::ColourValue color_variance_;
 };
 
-} // end namespace tuw_rviz_plugins
+} // end namespace marker_rviz_plugin
 
-#endif // VISUAL_MARKER_DETECTION_H
+#endif // MARKER_WITH_COVARIANCE_VISUAL_H

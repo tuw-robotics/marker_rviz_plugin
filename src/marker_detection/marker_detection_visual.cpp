@@ -31,11 +31,11 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 
-#include "display_marker_detection/visual_marker_detection.h"
+#include "marker_detection/marker_detection_visual.h"
 
 namespace marker_rviz_plugin {
 
-VisualMarkerDetection::VisualMarkerDetection ( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node ) {
+MarkerDetectionVisual::MarkerDetectionVisual ( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node ) {
     scene_manager_ = scene_manager;
 
     // Ogre::SceneNode s form a tree, with each node storing the
@@ -43,7 +43,7 @@ VisualMarkerDetection::VisualMarkerDetection ( Ogre::SceneManager* scene_manager
     // parent.  Ogre does the math of combining those transforms when it
     // is time to render.
     //
-    // Here we create a node to store the pose of the FiducialDetection's header frame
+    // Here we create a node to store the pose of the MarkerDetection's header frame
     // relative to the RViz fixed frame.
     frame_node_ = parent_node->createChildSceneNode();
 
@@ -53,12 +53,12 @@ VisualMarkerDetection::VisualMarkerDetection ( Ogre::SceneManager* scene_manager
     scale_ = 0.0;
 }
 
-VisualMarkerDetection::~VisualMarkerDetection() {
+MarkerDetectionVisual::~MarkerDetectionVisual() {
     // Destroy the frame node since we don't need it anymore.
     scene_manager_->destroySceneNode ( frame_node_ );
 }
 
-void VisualMarkerDetection::setMessage ( const marker_msgs::MarkerDetection::ConstPtr& msg ) {
+void MarkerDetectionVisual::setMessage ( const marker_msgs::MarkerDetection::ConstPtr& msg ) {
     markers_.resize ( msg->markers.size() );
     for ( size_t i = 0; i < markers_.size(); i++ ) {
         double p_x = msg->markers[i].pose.position.x;
@@ -78,17 +78,17 @@ void VisualMarkerDetection::setMessage ( const marker_msgs::MarkerDetection::Con
 }
 
 // Position is passed through to the SceneNode.
-void VisualMarkerDetection::setFramePosition ( const Ogre::Vector3& position ) {
+void MarkerDetectionVisual::setFramePosition ( const Ogre::Vector3& position ) {
     frame_node_->setPosition ( position );
 }
 
 // Orientation is passed through to the SceneNode.
-void VisualMarkerDetection::setFrameOrientation ( const Ogre::Quaternion& orientation ) {
+void MarkerDetectionVisual::setFrameOrientation ( const Ogre::Quaternion& orientation ) {
     frame_node_->setOrientation ( orientation );
 }
 
 // Color is passed through to the Shape object.
-void VisualMarkerDetection::setColor ( Ogre::ColourValue color ) {
+void MarkerDetectionVisual::setColor ( Ogre::ColourValue color ) {
     for ( size_t i = 0; i < markers_.size(); i++ ) {
         markers_[i]->setColor ( color );
     }
@@ -96,7 +96,7 @@ void VisualMarkerDetection::setColor ( Ogre::ColourValue color ) {
 }
 
 // Shape type is passed through to the Shape object.
-void VisualMarkerDetection::setShape ( rviz::Shape::Type shape_type ) {
+void MarkerDetectionVisual::setShape ( rviz::Shape::Type shape_type ) {
     for ( size_t i = 0; i < markers_.size(); i++ ) {
         Ogre::Vector3 position = markers_[i]->getPosition();
         Ogre::Quaternion orientation = markers_[i]->getOrientation();
@@ -112,7 +112,7 @@ void VisualMarkerDetection::setShape ( rviz::Shape::Type shape_type ) {
 }
 
 // Scale is passed through to the Shape object.
-void VisualMarkerDetection::setScale ( float scale ) {
+void MarkerDetectionVisual::setScale ( float scale ) {
     for ( size_t i = 0; i < markers_.size(); i++ ) {
         markers_[i]->setScale ( Ogre::Vector3 ( scale_, scale_, scale_ ) );
     }

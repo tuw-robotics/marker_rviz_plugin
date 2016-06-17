@@ -11,7 +11,9 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS
+  thread
+)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -114,8 +116,9 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-  ${catkin_INCLUDE_DIRS}
   ./include/
+  ${catkin_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -150,14 +153,23 @@ add_definitions(-DQT_NO_KEYWORDS)
 ## Here we specify which header files need to be run through "moc",
 ## Qt's meta-object compiler.
 qt4_wrap_cpp(MOC_FILES
-  include/display_marker_detection/display_marker_detection.h
+  include/marker_detection/marker_detection_display.h
+  include/marker_detection/marker_detection_visual.h
+  include/marker_with_covariance/marker_with_covariance_display.h
+  include/marker_with_covariance/marker_with_covariance_visual.h
+  include/marker_with_covariance_array/marker_with_covariance_array_display.h
+  include/marker_with_covariance_array/marker_with_covariance_array_visual.h
 )
 
 ## Here we specify the list of source files, including the output of
 ## the previous command which is stored in ``${MOC_FILES}``.
 set(SOURCE_FILES
-  src/display_marker_detection/display_marker_detection.cpp
-  src/display_marker_detection/visual_marker_detection.cpp
+  src/marker_detection/marker_detection_display.cpp
+  src/marker_detection/marker_detection_visual.cpp
+  src/marker_with_covariance/marker_with_covariance_display.cpp
+  src/marker_with_covariance/marker_with_covariance_visual.cpp
+  src/marker_with_covariance_array/marker_with_covariance_array_display.cpp
+  src/marker_with_covariance_array/marker_with_covariance_array_visual.cpp
   ${MOC_FILES}
 )
 
@@ -166,12 +178,17 @@ set(SOURCE_FILES
 ## "marker_rviz_plugin", or whatever your version of this project
 ## is called) and specify the list of source files we collected above
 ## in ``${SOURCE_FILES}``.
-add_library(${PROJECT_NAME} ${SOURCE_FILES})
+add_library(${PROJECT_NAME}
+  ${SOURCE_FILES}
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
 
 ## Link the library with whatever Qt libraries have been defined by
 ## the ``find_package(Qt4 ...)`` line above, and with whatever libraries
@@ -182,7 +199,10 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 ## library and names the actual file something like
 ## "libmarker_rviz_plugin.so", or whatever is appropriate for your
 ## particular OS.
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}
+  ${QT_LIBRARIES}
+  ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##

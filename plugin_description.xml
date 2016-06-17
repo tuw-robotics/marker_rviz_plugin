@@ -1,10 +1,26 @@
 <library path="lib/libmarker_rviz_plugin">
   <class name="marker_rviz_plugin/MarkerDetection"
-         type="marker_rviz_plugin::DisplayMarkerDetection"
+         type="marker_rviz_plugin::MarkerDetectionDisplay"
          base_class_type="rviz::Display">
     <description>
       Displays position and orientation of fiducials from marker_msgs/MarkerDetection messages.
     </description>
     <message_type>marker_msgs/MarkerDetection</message_type>
+  </class>
+  <class name="marker_rviz_plugin/MarkerWithCovariance"
+         type="marker_rviz_plugin::MarkerWithCovarianceDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays position, orientation and variance of single marker from marker_msgs/MarkerWithCovarianceStamped messages.
+    </description>
+    <message_type>marker_msgs/MarkerWithCovarianceStamped</message_type>
+  </class>
+  <class name="marker_rviz_plugin/MarkerWithCovarianceArray"
+         type="marker_rviz_plugin::MarkerWithCovarianceArrayDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays position, orientation and variance of multiple marker from marker_msgs/MarkerWithCovarianceArray messages.
+    </description>
+    <message_type>marker_msgs/MarkerWithCovarianceArray</message_type>
   </class>
 </library>

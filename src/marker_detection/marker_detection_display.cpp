@@ -38,14 +38,14 @@
 #include <rviz/properties/int_property.h>
 #include <rviz/frame_manager.h>
 
-#include "display_marker_detection/visual_marker_detection.h"
-#include "display_marker_detection/display_marker_detection.h"
+#include "marker_detection/marker_detection_visual.h"
+#include "marker_detection/marker_detection_display.h"
 
 namespace marker_rviz_plugin {
 
 // The constructor must have no arguments, so we can't give the
 // constructor the parameters it needs to fully initialize.
-DisplayMarkerDetection::DisplayMarkerDetection() {
+MarkerDetectionDisplay::MarkerDetectionDisplay() {
     color_property_ = new rviz::ColorProperty ( "Color", QColor ( 204, 51, 204 ),
             "Color to draw the markers.",
             this, SLOT ( updateColor() ) );
@@ -80,22 +80,22 @@ DisplayMarkerDetection::DisplayMarkerDetection() {
 // ``MessageFilterDisplay<message type>``, to save typing that long
 // templated class name every time you need to refer to the
 // superclass.
-void DisplayMarkerDetection::onInitialize() {
+void MarkerDetectionDisplay::onInitialize() {
     MFDClass::onInitialize();
     updateHistoryLength();
 }
 
-DisplayMarkerDetection::~DisplayMarkerDetection() {
+MarkerDetectionDisplay::~MarkerDetectionDisplay() {
 }
 
 // Clear the visuals by deleting their objects.
-void DisplayMarkerDetection::reset() {
+void MarkerDetectionDisplay::reset() {
     MFDClass::reset();
     visuals_.clear();
 }
 
 // Set the current color values for each visual.
-void DisplayMarkerDetection::updateColor() {
+void MarkerDetectionDisplay::updateColor() {
     Ogre::ColourValue color = color_property_->getOgreColor();
 
     for ( size_t i = 0; i < visuals_.size(); i++ ) {
@@ -104,7 +104,7 @@ void DisplayMarkerDetection::updateColor() {
 }
 
 // Set the current shape for each visual.
-void DisplayMarkerDetection::updateShape() {
+void MarkerDetectionDisplay::updateShape() {
     rviz::Shape::Type shape_type = ( rviz::Shape::Type ) shape_property_->getOptionInt();
 
     for ( size_t i = 0; i < visuals_.size(); i++ ) {
@@ -113,7 +113,7 @@ void DisplayMarkerDetection::updateShape() {
 }
 
 // Set the current scale for each visual.
-void DisplayMarkerDetection::updateScale() {
+void MarkerDetectionDisplay::updateScale() {
     float scale = scale_property_->getFloat();
 
     for ( size_t i = 0; i < visuals_.size(); i++ ) {
@@ -122,12 +122,12 @@ void DisplayMarkerDetection::updateScale() {
 }
 
 // Set the number of past visuals to show.
-void DisplayMarkerDetection::updateHistoryLength() {
+void MarkerDetectionDisplay::updateHistoryLength() {
     visuals_.rset_capacity ( history_length_property_->getInt() );
 }
 
 // This is our callback to handle an incoming message.
-void DisplayMarkerDetection::processMessage ( const marker_msgs::MarkerDetection::ConstPtr& msg ) {
+void MarkerDetectionDisplay::processMessage ( const marker_msgs::MarkerDetection::ConstPtr& msg ) {
     // Here we call the rviz::FrameManager to get the transform from the
     // fixed frame to the frame in the header of this Imu message.  If
     // it fails, we can't do anything else so we return.
@@ -143,11 +143,11 @@ void DisplayMarkerDetection::processMessage ( const marker_msgs::MarkerDetection
 
     // We are keeping a circular buffer of visual pointers.  This gets
     // the next one, or creates and stores it if the buffer is not full
-    boost::shared_ptr<VisualMarkerDetection> visual;
+    boost::shared_ptr<MarkerDetectionVisual> visual;
     if ( visuals_.full() ) {
         visual = visuals_.front();
     } else {
-        visual.reset ( new VisualMarkerDetection ( context_->getSceneManager(), scene_node_ ) );
+        visual.reset ( new MarkerDetectionVisual ( context_->getSceneManager(), scene_node_ ) );
     }
 
     // Now set or update the contents of the chosen visual.
@@ -167,5 +167,4 @@ void DisplayMarkerDetection::processMessage ( const marker_msgs::MarkerDetection
 // Tell pluginlib about this class.  It is important to do this in
 // global scope, outside our package's namespace.
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS ( marker_rviz_plugin::DisplayMarkerDetection,rviz::Display )
-// END_TUTORIAL
+PLUGINLIB_EXPORT_CLASS ( marker_rviz_plugin::MarkerDetectionDisplay,rviz::Display )
