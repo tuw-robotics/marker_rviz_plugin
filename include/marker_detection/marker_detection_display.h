@@ -31,10 +31,9 @@
 #define MARKER_DETECTION_DISPLAY_H
 
 #ifndef Q_MOC_RUN
-#include <boost/circular_buffer.hpp>
-
-#include <rviz/message_filter_display.h>
 #include <marker_msgs/MarkerDetection.h>
+#include <rviz/message_filter_display.h>
+#include <boost/circular_buffer.hpp>
 #endif
 
 #include <rviz/properties/enum_property.h>

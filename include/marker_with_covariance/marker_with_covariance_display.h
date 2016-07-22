@@ -31,8 +31,8 @@
 #define MARKER_WITH_COVARIANCE_DISPLAY_H
 
 #ifndef Q_MOC_RUN
-#include <rviz/message_filter_display.h>
 #include <marker_msgs/MarkerWithCovarianceStamped.h>
+#include <rviz/message_filter_display.h>
 #endif
 
 namespace Ogre
