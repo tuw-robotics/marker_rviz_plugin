@@ -87,24 +87,6 @@ void MarkerDetectionDisplay::onInitialize() {
     manual->end();
         */
 
-        /*
-        Ogre::ResourceManager::ResourceMapIterator materialIterator = Ogre::MaterialManager::getSingleton().getResourceIterator();
-        while (materialIterator.hasMoreElements())
-        {
-
-            std::string str = (static_cast<Ogre::ResourcePtr>(materialIterator.peekNextValue()))->getName();
-            std::cout << "c: " << str << std::endl;
-            materialIterator.moveNext();
-        }
-        */
-        Ogre::ResourceGroupManager::ResourceDeclarationList::iterator it;
-        Ogre::ResourceGroupManager::ResourceDeclarationList resources =   Ogre::ResourceGroupManager::getSingleton().getResourceDeclarationList(
-            Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME
-        );
-
-        for(it = resources.begin();it != resources.end(); ++it) {
-            std::cout << "************************"   << it->resourceName;
-        }
 
     Ogre::Plane plane;
     plane.normal = Ogre::Vector3::UNIT_Y;
@@ -119,26 +101,24 @@ void MarkerDetectionDisplay::onInitialize() {
     Ogre::Vector3::UNIT_Z);
 
     Ogre::Entity* planeEntity = context_->getSceneManager()->createEntity("image");
-    planeEntity->setMaterialName("RVIZ/Red");
     planeEntity->setCastShadows(false);
 
 
+    Ogre::MaterialPtr planeMaterial = Ogre::MaterialManager::getSingleton().create("imageMaterial",
+                                                                                   Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+    planeMaterial->setCullingMode(Ogre::CULL_NONE); //or CULL_CLOCKWISE or CULL_ANTICLOCKWISE as you wish
+    planeMaterial->setSceneBlending(Ogre::SBT_ADD);
+    planeMaterial->setReceiveShadows(false);
+    planeMaterial->getTechnique(0)->setLightingEnabled(false);
 
-    Ogre::MaterialPtr bg_material_ = Ogre::MaterialManager::getSingleton().create( "imageMaterial", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME );
-    bg_material_->setDepthWriteEnabled(false);
-    bg_material_->setReceiveShadows(false);
-    bg_material_->setDepthCheckEnabled(false);
-    bg_material_->getTechnique(0)->setLightingEnabled(false);
 
-
-    Ogre::TextureUnitState* tu = bg_material_->getTechnique(0)->getPass(0)->createTextureUnitState();
+    Ogre::TextureUnitState *tu = planeMaterial->getTechnique(0)->getPass(0)->createTextureUnitState();
     tu->setTextureName("textures/marker_icon.png");
-    tu->setTextureFiltering( Ogre::TFO_NONE );
-    tu->setAlphaOperation( Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, 0.0 );
+    tu->setTextureFiltering(Ogre::TFO_NONE);
+    tu->setAlphaOperation(Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, 0.0);
 
-    //context_->getSceneManager()->getRootSceneNode()->createChildSceneNode()->attachObject(planeEntity);
 
-    planeEntity->setMaterial(bg_material_);
+    planeEntity->setMaterial(planeMaterial);
 
 
     // add ManualObject to the RootSceneNode (so it will be visible)
