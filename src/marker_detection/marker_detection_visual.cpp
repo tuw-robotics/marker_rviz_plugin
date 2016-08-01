@@ -65,6 +65,10 @@ void MarkerDetectionVisual::setMessage ( const marker_msgs::MarkerDetection::Con
         double o_w = msg->markers[i].pose.orientation.w;
 
         // Create imagePlane scene node
+        // FIXME: Segfault occurs here if setMessage is called twice
+        // I guess this is because reset deletes the reference to the last SceneNode and the attached Entity,
+        // but the attached Entity is never cleaned up properly. This will change when this part gets changed into
+        // an own proper class.
         Ogre::Entity* markerEntity = scene_manager_->createEntity("imagePlane");
         markerEntity->setCastShadows(false);
         markerEntity->setMaterialName("imagePlaneMaterial");
