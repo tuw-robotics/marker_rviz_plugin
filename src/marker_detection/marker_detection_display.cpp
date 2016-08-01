@@ -41,6 +41,7 @@
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/int_property.h>
+#include <rviz/properties/bool_property.h>
 #include <rviz/frame_manager.h>
 #include "rviz/ogre_helpers/axes.h"
 
@@ -49,26 +50,18 @@
 
 namespace marker_rviz_plugin {
 
-// The constructor must have no arguments, so we can't give the
-// constructor the parameters it needs to fully initialize.
 MarkerDetectionDisplay::MarkerDetectionDisplay() {
 
+    _axis_property = new rviz::BoolProperty("Show Axis", true, "Show or hide axis.", this, SLOT (updateAxis()));
+    _marker_property = new rviz::BoolProperty("Show Marker", true, "Show or hide marker image.", this, SLOT (updateMarker()));
+
+    // Add the plugin orge_media folder to the Ogre ResourceGroup so it is possible to access plugin textures later on
     std::string rviz_path = ros::package::getPath(ROS_PACKAGE_NAME);
     Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media", "FileSystem", ROS_PACKAGE_NAME );
     Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup(ROS_PACKAGE_NAME);
 
 }
 
-// After the top-level rviz::Display::initialize() does its own setup,
-// it calls the subclass's onInitialize() function.  This is where we
-// instantiate all the workings of the class.  We make sure to also
-// call our immediate super-class's onInitialize() function, since it
-// does important stuff setting up the message filter.
-//
-//  Note that "MFDClass" is a typedef of
-// ``MessageFilterDisplay<message type>``, to save typing that long
-// templated class name every time you need to refer to the
-// superclass.
 void MarkerDetectionDisplay::onInitialize() {
     MFDClass::onInitialize();
 
@@ -133,6 +126,16 @@ MarkerDetectionDisplay::~MarkerDetectionDisplay() {
 // Clear the visuals by deleting their objects.
 void MarkerDetectionDisplay::reset() {
     MFDClass::reset();
+}
+
+void MarkerDetectionDisplay::updateAxis() {
+    bool showAxis = _axis_property->getBool();
+
+}
+
+void MarkerDetectionDisplay::updateMarker() {
+    bool showMarker = _marker_property->getBool();
+
 }
 
 // This is our callback to handle an incoming message.
