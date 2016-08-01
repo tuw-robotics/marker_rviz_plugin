@@ -42,6 +42,7 @@
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/int_property.h>
 #include <rviz/frame_manager.h>
+#include "rviz/ogre_helpers/axes.h"
 
 #include "marker_detection/marker_detection_visual.h"
 #include "marker_detection/marker_detection_display.h"
@@ -89,7 +90,7 @@ void MarkerDetectionDisplay::onInitialize() {
 
 
     Ogre::Plane plane;
-    plane.normal = Ogre::Vector3::UNIT_Y;
+    plane.normal = Ogre::Vector3::UNIT_Z;
     plane.d = 0;
 
     Ogre::MeshManager::getSingleton().createPlane("image",
@@ -98,7 +99,7 @@ void MarkerDetectionDisplay::onInitialize() {
     0.3, 0.3,
     1, 1, true, 1,
     1.0, 1.0,
-    Ogre::Vector3::UNIT_Z);
+    Ogre::Vector3::UNIT_X);
 
     Ogre::Entity* planeEntity = context_->getSceneManager()->createEntity("image");
     planeEntity->setCastShadows(false);
@@ -120,6 +121,7 @@ void MarkerDetectionDisplay::onInitialize() {
 
     planeEntity->setMaterial(planeMaterial);
 
+    rviz::Axes *axes = new rviz::Axes( scene_manager_, scene_node_, 0.2, 0.02 );
 
     // add ManualObject to the RootSceneNode (so it will be visible)
     scene_node_->attachObject(planeEntity);
