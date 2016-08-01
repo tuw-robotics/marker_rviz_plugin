@@ -52,8 +52,8 @@ namespace marker_rviz_plugin {
 
 MarkerDetectionDisplay::MarkerDetectionDisplay() {
 
-    _axis_property = new rviz::BoolProperty("Show Axis", true, "Show or hide axis.", this, SLOT (updateAxis()));
-    _marker_property = new rviz::BoolProperty("Show Marker", true, "Show or hide marker image.", this, SLOT (updateMarker()));
+    _showAxesProperty = new rviz::BoolProperty("Show Axes", true, "Show or hide axes.", this, SLOT (updateAxes()));
+    _showMarkerProperty = new rviz::BoolProperty("Show Marker", true, "Show or hide marker image.", this, SLOT (updateMarker()));
 
     // Add the plugin orge_media folder to the Ogre ResourceGroup so it is possible to access plugin textures later on
     std::string rviz_path = ros::package::getPath(ROS_PACKAGE_NAME);
@@ -65,46 +65,23 @@ MarkerDetectionDisplay::MarkerDetectionDisplay() {
 void MarkerDetectionDisplay::onInitialize() {
     MFDClass::onInitialize();
 
-    // create ManualObject
-    //Ogre::ManualObject* manual = context_->getSceneManager()->createManualObject("manual");
+    // Create imagePlane mesh
+    Ogre::Plane imagePlane;
+    imagePlane.normal = Ogre::Vector3::UNIT_Z;
+    imagePlane.d = 0;
 
-
-        /*
-    // specify the material (by name) and rendering type
-    manual->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST );
-
-    // define start and end point
-    manual->position(-0.2, -0.2, -0.2);
-    manual->position(0.2, 0.2, 0.2);
-
-    // tell Ogre, your definition has finished
-    manual->end();
-        */
-
-
-    Ogre::Plane plane;
-    plane.normal = Ogre::Vector3::UNIT_Z;
-    plane.d = 0;
-
-    Ogre::MeshManager::getSingleton().createPlane("image",
-    Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-    plane,
+    Ogre::MeshManager::getSingleton().createPlane("imagePlane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, imagePlane,
     0.3, 0.3,
     1, 1, true, 1,
     1.0, 1.0,
     Ogre::Vector3::UNIT_X);
 
-    Ogre::Entity* planeEntity = context_->getSceneManager()->createEntity("image");
-    planeEntity->setCastShadows(false);
-
-
-    Ogre::MaterialPtr planeMaterial = Ogre::MaterialManager::getSingleton().create("imageMaterial",
-                                                                                   Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-    planeMaterial->setCullingMode(Ogre::CULL_NONE); //or CULL_CLOCKWISE or CULL_ANTICLOCKWISE as you wish
-    planeMaterial->setSceneBlending(Ogre::SBT_ADD);
+    // Create image material and load texture
+    Ogre::MaterialPtr planeMaterial = Ogre::MaterialManager::getSingleton().create("imagePlaneMaterial", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+    planeMaterial->setCullingMode(Ogre::CULL_NONE);
+    planeMaterial->setSceneBlending(Ogre::SBT_REPLACE);
     planeMaterial->setReceiveShadows(false);
     planeMaterial->getTechnique(0)->setLightingEnabled(false);
-
 
     Ogre::TextureUnitState *tu = planeMaterial->getTechnique(0)->getPass(0)->createTextureUnitState();
     tu->setTextureName("textures/marker_icon.png");
@@ -112,12 +89,7 @@ void MarkerDetectionDisplay::onInitialize() {
     tu->setAlphaOperation(Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, 0.0);
 
 
-    planeEntity->setMaterial(planeMaterial);
-
-    rviz::Axes *axes = new rviz::Axes( scene_manager_, scene_node_, 0.2, 0.02 );
-
-    // add ManualObject to the RootSceneNode (so it will be visible)
-    scene_node_->attachObject(planeEntity);
+    _visual = new MarkerDetectionVisual ( context_->getSceneManager(), scene_node_ );
 }
 
 MarkerDetectionDisplay::~MarkerDetectionDisplay() {
@@ -128,20 +100,19 @@ void MarkerDetectionDisplay::reset() {
     MFDClass::reset();
 }
 
-void MarkerDetectionDisplay::updateAxis() {
-    bool showAxis = _axis_property->getBool();
-
+void MarkerDetectionDisplay::updateAxes() {
+    bool showAxes = _showAxesProperty->getBool();
+    _visual->setShowAxes(showAxes);
 }
 
 void MarkerDetectionDisplay::updateMarker() {
-    bool showMarker = _marker_property->getBool();
-
+    bool showMarker = _showMarkerProperty->getBool();
+    _visual->setShowMarker(showMarker);
 }
 
 // This is our callback to handle an incoming message.
 void MarkerDetectionDisplay::processMessage ( const marker_msgs::MarkerDetection::ConstPtr& msg ) {
 
-    std::cout << "msg" << std::endl;
     // Here we call the rviz::FrameManager to get the transform from the
     // fixed frame to the frame in the header of this Imu message.  If
     // it fails, we can't do anything else so we return.
@@ -155,28 +126,12 @@ void MarkerDetectionDisplay::processMessage ( const marker_msgs::MarkerDetection
         return;
     }
 
-    scene_node_->setPosition( position );
-    scene_node_->setOrientation( orientation );
-
-
-        /*
-    for ( size_t i = 0; i < msg->markers.size(); i++ ) {
-        double p_x = msg->markers[i].pose.position.x;
-        double p_y = msg->markers[i].pose.position.y;
-        double p_z = msg->markers[i].pose.position.z;
-        double o_x = msg->markers[i].pose.orientation.x;
-        double o_y = msg->markers[i].pose.orientation.y;
-        double o_z = msg->markers[i].pose.orientation.z;
-        double o_w = msg->markers[i].pose.orientation.w;
-
-        markers_[i].reset ( new rviz::Shape ( shape_type_, scene_manager_, frame_node_ ) );
-        markers_[i]->setColor ( color_ );
-        markers_[i]->setPosition ( Ogre::Vector3 ( p_x, p_y, p_z ) );
-        markers_[i]->setOrientation ( Ogre::Quaternion ( o_w, o_x, o_y, o_z ) );
-        markers_[i]->setScale ( Ogre::Vector3 ( scale_, scale_, scale_ ) );
-    }
-        */
-
+    // Now set or update the contents of the chosen visual.
+    _visual->setMessage(msg);
+    _visual->setFramePosition(position);
+    _visual->setFrameOrientation(orientation);
+    _visual->setShowAxes(_showAxesProperty->getBool());
+    _visual->setShowMarker(_showMarkerProperty->getBool());
 
     context_->queueRender();
 }

@@ -41,7 +41,7 @@ class Quaternion;
 
 namespace rviz
 {
-class Shape;
+class Axes;
 }
 
 namespace marker_rviz_plugin
@@ -69,21 +69,13 @@ public:
   void setFramePosition( const Ogre::Vector3& position );
   void setFrameOrientation( const Ogre::Quaternion& orientation );
 
-  // Set the color of the visual, which is an user-editable
-  // parameter and therefore don't come from the MarkerDetection message.
-  void setColor( Ogre::ColourValue color );
-
-  // Set the shape of the visual, which is an user-editable
-  // parameter and therefore don't come from the MarkerDetection message.
-  void setShape( rviz::Shape::Type shape_type );
-
-  // Set the scale of the visual, which is an user-editable
-  // parameter and therefore don't come from the MarkerDetection message.
-  void setScale( float scale );
+  void setShowAxes( bool showAxes );
+  void setShowMarker( bool showMarker );
 
 private:
   // The objects implementing the actual shape
-  std::vector<boost::shared_ptr<rviz::Shape> > markers_;
+  std::vector<boost::shared_ptr<rviz::Axes> > _markersAxes;
+  std::vector<boost::shared_ptr<Ogre::SceneNode> > _markersImages;
 
   // A SceneNode whose pose is set to match the coordinate frame of
   // the Imu message header.
@@ -93,14 +85,8 @@ private:
   // destroy the ``frame_node_``.
   Ogre::SceneManager* scene_manager_;
 
-  // The Shape object's color
-  Ogre::ColourValue color_;
-  
-  // The Shape object's shape type
-  rviz::Shape::Type shape_type_;
-  
-  // The Shape object's scale
-  float scale_;
+  bool _showAxes;
+  bool _showMarker;
 };
 
 } // end namespace marker_rviz_plugin

@@ -83,7 +83,7 @@ protected:
 
   // These Qt slots get connected to signals indicating changes in the user-editable properties.
 private Q_SLOTS:
-    void updateAxis();
+    void updateAxes();
     void updateMarker();
 
   // Function to handle an incoming ROS message.
@@ -91,8 +91,10 @@ private:
   void processMessage( const marker_msgs::MarkerDetection::ConstPtr& msg );
 
   // User-editable property variables.
-  rviz::BoolProperty* _axis_property;
-  rviz::BoolProperty* _marker_property;
+  rviz::BoolProperty* _showAxesProperty;
+  rviz::BoolProperty* _showMarkerProperty;
+
+  MarkerDetectionVisual *_visual;
 };
 
 } // end namespace marker_rviz_plugin
