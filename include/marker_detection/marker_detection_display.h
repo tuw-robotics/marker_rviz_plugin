@@ -83,24 +83,18 @@ protected:
 
   // These Qt slots get connected to signals indicating changes in the user-editable properties.
 private Q_SLOTS:
-  void updateColor();
-  void updateShape();
-  void updateScale();
-  void updateHistoryLength();
+    void updateAxes();
+    void updateMarker();
 
   // Function to handle an incoming ROS message.
 private:
   void processMessage( const marker_msgs::MarkerDetection::ConstPtr& msg );
 
-  // Storage for the list of visuals.  It is a circular buffer where
-  // data gets popped from the front (oldest) and pushed to the back (newest)
-  boost::circular_buffer<boost::shared_ptr<MarkerDetectionVisual> > visuals_;
-
   // User-editable property variables.
-  rviz::ColorProperty* color_property_;
-  rviz::EnumProperty* shape_property_;
-  rviz::FloatProperty* scale_property_;
-  rviz::IntProperty* history_length_property_;
+  rviz::BoolProperty* _showAxesProperty;
+  rviz::BoolProperty* _showMarkerProperty;
+
+  MarkerDetectionVisual *_visual;
 };
 
 } // end namespace marker_rviz_plugin

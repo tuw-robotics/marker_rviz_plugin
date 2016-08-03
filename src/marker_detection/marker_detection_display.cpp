@@ -27,8 +27,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <OGRE/OgreManualObject.h>
+#include <OGRE/OgreEntity.h>
+#include <OGRE/OgreMeshManager.h>
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
+
+#include <ros/package.h>
 
 #include <tf/transform_listener.h>
 
@@ -36,53 +41,55 @@
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/float_property.h>
 #include <rviz/properties/int_property.h>
+#include <rviz/properties/bool_property.h>
 #include <rviz/frame_manager.h>
+#include "rviz/ogre_helpers/axes.h"
 
 #include "marker_detection/marker_detection_visual.h"
 #include "marker_detection/marker_detection_display.h"
 
 namespace marker_rviz_plugin {
 
-// The constructor must have no arguments, so we can't give the
-// constructor the parameters it needs to fully initialize.
 MarkerDetectionDisplay::MarkerDetectionDisplay() {
-    color_property_ = new rviz::ColorProperty ( "Color", QColor ( 204, 51, 204 ),
-            "Color to draw the markers.",
-            this, SLOT ( updateColor() ) );
 
-    shape_property_ = new rviz::EnumProperty ( "Shape", QString::fromStdString ( "Cube" ),
-            "Shape of the markers.",
-            this, SLOT ( updateShape() ) );
-    shape_property_->addOptionStd ( "Cube", rviz::Shape::Cube );
-    shape_property_->addOptionStd ( "Cylinder", rviz::Shape::Cylinder );
-    shape_property_->addOptionStd ( "Sphere", rviz::Shape::Sphere );
+    _showAxesProperty = new rviz::BoolProperty("Show Axes", true, "Show or hide axes.", this, SLOT (updateAxes()));
+    _showMarkerProperty = new rviz::BoolProperty("Show Marker", true, "Show or hide marker image.", this, SLOT (updateMarker()));
 
-    scale_property_ = new rviz::FloatProperty ( "Scale", 0.3,
-            "Scale of the markers.",
-            this, SLOT ( updateScale() ) );
-    scale_property_->setMin ( 0 );
-    scale_property_->setMax ( 1 );
+    // Add the plugin orge_media folder to the Ogre ResourceGroup so it is possible to access plugin textures later on
+    std::string rviz_path = ros::package::getPath(ROS_PACKAGE_NAME);
+    Ogre::ResourceGroupManager::getSingleton().addResourceLocation( rviz_path + "/ogre_media", "FileSystem", ROS_PACKAGE_NAME );
+    Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup(ROS_PACKAGE_NAME);
 
-    history_length_property_ = new rviz::IntProperty ( "History Length", 1,
-            "Number of prior measurements to display.",
-            this, SLOT ( updateHistoryLength() ) );
-    history_length_property_->setMin ( 1 );
-    history_length_property_->setMax ( 100000 );
 }
 
-// After the top-level rviz::Display::initialize() does its own setup,
-// it calls the subclass's onInitialize() function.  This is where we
-// instantiate all the workings of the class.  We make sure to also
-// call our immediate super-class's onInitialize() function, since it
-// does important stuff setting up the message filter.
-//
-//  Note that "MFDClass" is a typedef of
-// ``MessageFilterDisplay<message type>``, to save typing that long
-// templated class name every time you need to refer to the
-// superclass.
 void MarkerDetectionDisplay::onInitialize() {
     MFDClass::onInitialize();
-    updateHistoryLength();
+
+    // Create imagePlane mesh
+    Ogre::Plane imagePlane;
+    imagePlane.normal = Ogre::Vector3::UNIT_Z;
+    imagePlane.d = 0;
+
+    Ogre::MeshManager::getSingleton().createPlane("imagePlane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, imagePlane,
+    0.3, 0.3,
+    1, 1, true, 1,
+    1.0, 1.0,
+    Ogre::Vector3::UNIT_X);
+
+    // Create image material and load texture
+    Ogre::MaterialPtr planeMaterial = Ogre::MaterialManager::getSingleton().create("imagePlaneMaterial", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+    planeMaterial->setCullingMode(Ogre::CULL_NONE);
+    planeMaterial->setSceneBlending(Ogre::SBT_REPLACE);
+    planeMaterial->setReceiveShadows(false);
+    planeMaterial->getTechnique(0)->setLightingEnabled(false);
+
+    Ogre::TextureUnitState *tu = planeMaterial->getTechnique(0)->getPass(0)->createTextureUnitState();
+    tu->setTextureName("textures/marker_icon.png");
+    tu->setTextureFiltering(Ogre::TFO_NONE);
+    tu->setAlphaOperation(Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, 0.0);
+
+
+    _visual = new MarkerDetectionVisual ( context_->getSceneManager(), scene_node_ );
 }
 
 MarkerDetectionDisplay::~MarkerDetectionDisplay() {
@@ -91,43 +98,21 @@ MarkerDetectionDisplay::~MarkerDetectionDisplay() {
 // Clear the visuals by deleting their objects.
 void MarkerDetectionDisplay::reset() {
     MFDClass::reset();
-    visuals_.clear();
 }
 
-// Set the current color values for each visual.
-void MarkerDetectionDisplay::updateColor() {
-    Ogre::ColourValue color = color_property_->getOgreColor();
-
-    for ( size_t i = 0; i < visuals_.size(); i++ ) {
-        visuals_[ i ]->setColor ( color );
-    }
+void MarkerDetectionDisplay::updateAxes() {
+    bool showAxes = _showAxesProperty->getBool();
+    _visual->setShowAxes(showAxes);
 }
 
-// Set the current shape for each visual.
-void MarkerDetectionDisplay::updateShape() {
-    rviz::Shape::Type shape_type = ( rviz::Shape::Type ) shape_property_->getOptionInt();
-
-    for ( size_t i = 0; i < visuals_.size(); i++ ) {
-        visuals_[ i ]->setShape ( shape_type );
-    }
-}
-
-// Set the current scale for each visual.
-void MarkerDetectionDisplay::updateScale() {
-    float scale = scale_property_->getFloat();
-
-    for ( size_t i = 0; i < visuals_.size(); i++ ) {
-        visuals_[ i ]->setScale ( scale );
-    }
-}
-
-// Set the number of past visuals to show.
-void MarkerDetectionDisplay::updateHistoryLength() {
-    visuals_.rset_capacity ( history_length_property_->getInt() );
+void MarkerDetectionDisplay::updateMarker() {
+    bool showMarker = _showMarkerProperty->getBool();
+    _visual->setShowMarker(showMarker);
 }
 
 // This is our callback to handle an incoming message.
 void MarkerDetectionDisplay::processMessage ( const marker_msgs::MarkerDetection::ConstPtr& msg ) {
+
     // Here we call the rviz::FrameManager to get the transform from the
     // fixed frame to the frame in the header of this Imu message.  If
     // it fails, we can't do anything else so we return.
@@ -141,25 +126,14 @@ void MarkerDetectionDisplay::processMessage ( const marker_msgs::MarkerDetection
         return;
     }
 
-    // We are keeping a circular buffer of visual pointers.  This gets
-    // the next one, or creates and stores it if the buffer is not full
-    boost::shared_ptr<MarkerDetectionVisual> visual;
-    if ( visuals_.full() ) {
-        visual = visuals_.front();
-    } else {
-        visual.reset ( new MarkerDetectionVisual ( context_->getSceneManager(), scene_node_ ) );
-    }
-
     // Now set or update the contents of the chosen visual.
-    visual->setMessage ( msg );
-    visual->setFramePosition ( position );
-    visual->setFrameOrientation ( orientation );
-    visual->setColor ( color_property_->getOgreColor() );
-    visual->setShape ( ( rviz::Shape::Type ) shape_property_->getOptionInt() );
-    visual->setScale ( scale_property_->getFloat() );
+    _visual->setMessage(msg);
+    _visual->setFramePosition(position);
+    _visual->setFrameOrientation(orientation);
+    _visual->setShowAxes(_showAxesProperty->getBool());
+    _visual->setShowMarker(_showMarkerProperty->getBool());
 
-    // And send it to the end of the circular buffer
-    visuals_.push_back ( visual );
+    context_->queueRender();
 }
 
 } // end namespace marker_rviz_plugin
