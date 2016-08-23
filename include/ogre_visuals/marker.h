@@ -29,56 +29,65 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MARKER_DETECTION_VISUAL_H
-#define MARKER_DETECTION_VISUAL_H
+#ifndef MARKER_RVIZ_PLUGIN_MARKER_H
+#define MARKER_RVIZ_PLUGIN_MARKER_H
 
-#include <marker_msgs/MarkerDetection.h>
-#include "ogre_visuals/marker.h"
+#include <string>
+#include "rviz/ogre_helpers/object.h"
+#include "rviz/ogre_helpers/axes.h"
 
 namespace Ogre {
-    class Vector3;
+    class SceneManager;
 
-    class Quaternion;
-}
+    class SceneNode;
 
-namespace rviz {
-    class Axes;
+    class Entity;
 }
 
 namespace marker_rviz_plugin {
 
-    class MarkerDetectionVisual {
+    class MarkerResources {
     public:
-        MarkerDetectionVisual(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node);
+        MarkerResources();
 
-        virtual ~MarkerDetectionVisual();
+        ~MarkerResources();
+    };
 
-        // Configure the visual to show the data in the message.
-        void setMessage(const marker_msgs::MarkerDetection::ConstPtr &msg);
+    class Marker : public rviz::Object {
+    public:
 
-        // Set the pose of the coordinate frame the message refers to.
-        // These could be done inside setMessage(), but that would require
-        // calls to FrameManager and error handling inside setMessage(),
-        // which doesn't seem as clean.  This way MarkerDetectionVisual is
-        // only responsible for visualization.
-        void setFramePosition(const Ogre::Vector3 &position);
+        Marker(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node = 0);
 
-        void setFrameOrientation(const Ogre::Quaternion &orientation);
+        virtual ~Marker();
 
         void setShowAxes(bool showAxes);
 
         void setShowMarker(bool showMarker);
 
+        virtual void setColor(float r, float g, float b, float a);
+
+        virtual void setOrientation(const Ogre::Quaternion &orientation);
+
+        virtual void setPosition(const Ogre::Vector3 &position);
+
+        virtual void setScale(const Ogre::Vector3 &scale);
+
+        virtual const Ogre::Vector3 &getPosition();
+
+        virtual const Ogre::Quaternion &getOrientation();
+
+        void setUserData(const Ogre::Any &data);
+
     private:
-        std::vector<boost::shared_ptr<Marker> > _markers;
+        static MarkerResources static_resources_; // load static resources once for this class
 
-        Ogre::SceneNode *frame_node_;
-        Ogre::SceneManager *scene_manager_;
+        Ogre::SceneNode *scene_node_;
 
-        bool _showAxes;
-        bool _showMarker;
+        Ogre::Entity *markerEntity_;
+        rviz::Axes *axes_;
     };
 
-} // end namespace marker_rviz_plugin
+}
 
-#endif // MARKER_DETECTION_VISUAL_H
+
+#endif //MARKER_RVIZ_PLUGIN_MARKER_H
