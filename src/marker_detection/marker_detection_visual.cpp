@@ -64,12 +64,14 @@ namespace marker_rviz_plugin {
             double o_y = msg->markers[i].pose.orientation.y;
             double o_z = msg->markers[i].pose.orientation.z;
             double o_w = msg->markers[i].pose.orientation.w;
+            int id = msg->markers[i].ids[0];
 
-            _markers[i].reset(new Marker(scene_manager_, frame_node_));
+            _markers[i].reset(new Marker(scene_manager_, frame_node_, id));
             _markers[i]->setPosition(Ogre::Vector3(p_x, p_y, p_z));
             _markers[i]->setOrientation(Ogre::Quaternion(o_w, o_x, o_y, o_z));
             _markers[i]->setShowMarker(_showMarker);
             _markers[i]->setShowAxes(_showAxes);
+            _markers[i]->setShowLabel(_showLabel);
         }
     }
 
@@ -95,6 +97,14 @@ namespace marker_rviz_plugin {
         }
 
         _showMarker = showMarker;
+    }
+
+    void MarkerDetectionVisual::setShowLabel(bool showLabel) {
+        for (size_t i = 0; i < _markers.size(); i++) {
+            _markers[i]->setShowLabel(showLabel);
+        }
+
+        _showLabel = showLabel;
     }
 
 }

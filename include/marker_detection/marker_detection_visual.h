@@ -69,6 +69,8 @@ namespace marker_rviz_plugin {
 
         void setShowMarker(bool showMarker);
 
+        void setShowLabel(bool showLabel);
+
     private:
         std::vector<boost::shared_ptr<Marker> > _markers;
 
@@ -77,6 +79,7 @@ namespace marker_rviz_plugin {
 
         bool _showAxes;
         bool _showMarker;
+        bool _showLabel;
     };
 
 } // end namespace marker_rviz_plugin

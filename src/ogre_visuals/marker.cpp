@@ -72,7 +72,7 @@ namespace marker_rviz_plugin {
 
     }
 
-    Marker::Marker(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node)
+    Marker::Marker(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node, int id)
             : rviz::Object(scene_manager) {
         if (!parent_node) {
             parent_node = scene_manager_->getRootSceneNode();
@@ -86,10 +86,21 @@ namespace marker_rviz_plugin {
         scene_node_->attachObject(markerEntity_);
 
         axes_ = new rviz::Axes(scene_manager_, scene_node_, 0.2, 0.02);
+
+        std::stringstream ss;
+        ss << "#" << id;
+        text_ = new rviz::MovableText(ss.str(), "Arial", 0.1);
+        text_->setTextAlignment(rviz::MovableText::H_CENTER, rviz::MovableText::V_BELOW);
+        text_->setColor(Ogre::ColourValue(0.70, 0.70, 0.70));
+
+        text_node_ = scene_node_->createChildSceneNode();
+        text_node_->setPosition(0, 0.18, 0);
+        text_node_->attachObject(text_);
     }
 
     Marker::~Marker() {
         delete axes_;
+        delete text_;
 
         if (markerEntity_)
             scene_manager_->destroyEntity(markerEntity_);
@@ -103,6 +114,10 @@ namespace marker_rviz_plugin {
 
     void Marker::setShowMarker(bool showMarker) {
         markerEntity_->setVisible(showMarker);
+    }
+
+    void Marker::setShowLabel(bool showLabel) {
+        text_node_->setVisible(showLabel);
     }
 
     void Marker::setColor(float r, float g, float b, float a) {}

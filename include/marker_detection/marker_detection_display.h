@@ -88,9 +88,7 @@ namespace marker_rviz_plugin {
         // These Qt slots get connected to signals indicating changes in the user-editable properties.
     private Q_SLOTS:
 
-        void updateAxes();
-
-        void updateMarker();
+        void updateVisual();
 
 
     private:
@@ -99,6 +97,7 @@ namespace marker_rviz_plugin {
 
         rviz::BoolProperty *_showAxesProperty;
         rviz::BoolProperty *_showMarkerProperty;
+        rviz::BoolProperty *_showLabelProperty;
 
         MarkerDetectionVisual *_visual;
     };

@@ -49,14 +49,14 @@
 
 #include "marker_detection/marker_detection_visual.h"
 #include "marker_detection/marker_detection_display.h"
-#include "ogre_visuals/marker.h"
 
 namespace marker_rviz_plugin {
 
     MarkerDetectionDisplay::MarkerDetectionDisplay() {
 
-        _showAxesProperty = new rviz::BoolProperty("Show Axes", true, "Show or hide axes.", this, SLOT (updateAxes()));
-        _showMarkerProperty = new rviz::BoolProperty("Show Marker", true, "Show or hide marker image.", this, SLOT (updateMarker()));
+        _showAxesProperty = new rviz::BoolProperty("Show Axes", true, "Show or hide axes.", this, SLOT (updateVisual()));
+        _showMarkerProperty = new rviz::BoolProperty("Show Marker", true, "Show or hide marker image.", this, SLOT (updateVisual()));
+        _showLabelProperty = new rviz::BoolProperty("Show Label", true, "Show or hide marker label.", this, SLOT (updateVisual()));
 
         // Add the plugin orge_media folder to the Ogre ResourceGroup so it is possible to access plugin textures later on
         std::string rviz_path = ros::package::getPath(ROS_PACKAGE_NAME);
@@ -79,14 +79,10 @@ namespace marker_rviz_plugin {
         MFDClass::reset();
     }
 
-    void MarkerDetectionDisplay::updateAxes() {
-        bool showAxes = _showAxesProperty->getBool();
-        _visual->setShowAxes(showAxes);
-    }
-
-    void MarkerDetectionDisplay::updateMarker() {
-        bool showMarker = _showMarkerProperty->getBool();
-        _visual->setShowMarker(showMarker);
+    void MarkerDetectionDisplay::updateVisual() {
+        _visual->setShowAxes(_showAxesProperty->getBool());
+        _visual->setShowMarker(_showMarkerProperty->getBool());
+        _visual->setShowLabel(_showLabelProperty->getBool());
     }
 
 // This is our callback to handle an incoming message.
@@ -108,6 +104,7 @@ namespace marker_rviz_plugin {
         _visual->setFrameOrientation(orientation);
         _visual->setShowAxes(_showAxesProperty->getBool());
         _visual->setShowMarker(_showMarkerProperty->getBool());
+        _visual->setShowLabel(_showLabelProperty->getBool());
 
         context_->queueRender();
     }

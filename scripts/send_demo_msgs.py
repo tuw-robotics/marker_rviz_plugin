@@ -19,7 +19,6 @@ br = tf.TransformBroadcaster()
 rate = rospy.Rate(100)
 angle = 0
 
-axes = 'sxyz' # 'sxyz' or 'rxyz'
 r = pi/2 # 90 deg
 p = pi/3 # 60 deg
 y = 0
@@ -42,18 +41,23 @@ while not rospy.is_shutdown():
     marker.pose.position.y = 0.3
     marker.pose.position.z = 0.5
     ori = marker.pose.orientation
-    ori.x, ori.y, ori.z, ori.w = tf.transformations.quaternion_from_euler(r, p, y + cos(10 * angle), axes)
+    ori.x, ori.y, ori.z, ori.w = tf.transformations.quaternion_from_euler(r, p, y + cos(10 * angle))
+    #ori.x, ori.y, ori.z, ori.w = tf.transformations.quaternion_from_euler(0, 0, 0)
 
     marker_detection.markers.append(marker)
 
     publisher_detection.publish( marker_detection )
 
     # MarkerWithCovarianceStamped
-    marker_with_cov = MarkerWithCovarianceStamped()
-    marker_with_cov.header.frame_id = "/base_link"
-    marker_with_cov.header.stamp = stamp
+    marker_with_cov_s = MarkerWithCovarianceStamped()
+    marker_with_cov_s.header.frame_id = "/base_link"
+    marker_with_cov_s.header.stamp = stamp
 
-    publisher_cov.publish( marker_with_cov )
+    marker_with_cov_s.marker = MarkerWithCovariance()
+    marker_with_cov_s.marker.marker = marker
+    marker_with_cov_s.marker.covariance = [0.9919999999999933, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.030461741978670857, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.030461741978670857, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2741556778080377]
+
+    publisher_cov.publish( marker_with_cov_s )
 
     # Send base_link transform
     br.sendTransform((marker.pose.position.x, marker.pose.position.y, marker.pose.position.z),
@@ -64,4 +68,29 @@ while not rospy.is_shutdown():
 
     angle += .0005
     rate.sleep()
+
+
+'''
+---
+header: 
+  seq: 419
+  stamp: 
+    secs: 1472036917
+    nsecs: 157325029
+  frame_id: /base_link
+child_frame_id: /odom_msg
+pose: 
+  pose: 
+    position: 
+      x: 0.0
+      y: 1.98
+      z: 0.0
+    orientation: 
+      x: -0.0
+      y: 0.0
+      z: 0.99695882639
+      w: -0.0779300871451
+  covariance: [0.9919999999999933, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.030461741978670857, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.030461741978670857, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2741556778080377]
+
+'''
 

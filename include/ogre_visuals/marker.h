@@ -35,6 +35,7 @@
 #include <string>
 #include "rviz/ogre_helpers/object.h"
 #include "rviz/ogre_helpers/axes.h"
+#include "rviz/ogre_helpers/movable_text.h"
 
 namespace Ogre {
     class SceneManager;
@@ -56,13 +57,15 @@ namespace marker_rviz_plugin {
     class Marker : public rviz::Object {
     public:
 
-        Marker(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node = 0);
+        Marker(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node = 0, int id = -1);
 
         virtual ~Marker();
 
         void setShowAxes(bool showAxes);
 
         void setShowMarker(bool showMarker);
+
+        void setShowLabel(bool showLabel);
 
         virtual void setColor(float r, float g, float b, float a);
 
@@ -85,6 +88,9 @@ namespace marker_rviz_plugin {
 
         Ogre::Entity *markerEntity_;
         rviz::Axes *axes_;
+        rviz::MovableText *text_;
+        Ogre::SceneNode *text_node_;
+
     };
 
 }
