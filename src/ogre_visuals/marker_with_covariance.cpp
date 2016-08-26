@@ -29,71 +29,52 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MARKER_RVIZ_PLUGIN_MARKER_H
-#define MARKER_RVIZ_PLUGIN_MARKER_H
-
-#include <string>
-#include "rviz/ogre_helpers/object.h"
-#include "rviz/ogre_helpers/axes.h"
-#include "rviz/ogre_helpers/movable_text.h"
-
-namespace Ogre {
-    class SceneManager;
-
-    class SceneNode;
-
-    class Entity;
-}
+#include "ogre_visuals/marker_with_covariance.h"
+#include "rviz/ogre_helpers/shape.h"
 
 namespace marker_rviz_plugin {
 
-    class MarkerResources {
-    public:
-        MarkerResources();
+    MarkerWithCovariance::MarkerWithCovariance(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node, int id)
+            : Marker(scene_manager, parent_node, id) {
 
-        ~MarkerResources();
-    };
+        variance_pos_ = new rviz::Shape(rviz::Shape::Sphere, scene_manager_, scene_node_);
+        variance_pos_->setColor(Ogre::ColourValue(1.0, 1.0, 0.0));
+        variance_pos_->getMaterial()->setReceiveShadows(false);
+    }
 
-    class Marker : public rviz::Object {
-    public:
+    MarkerWithCovariance::~MarkerWithCovariance() {
+        delete variance_pos_;
+    }
 
-        Marker(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node = 0, int id = -1);
+    void MarkerWithCovariance::setCovarianceMatrix(boost::array<double, 36> m) {
+        Ogre::Matrix3 cov_xyz = Ogre::Matrix3(
+            m[6 * 0 + 0], m[6 * 0 + 1], m[6 * 0 + 2],
+            m[6 * 1 + 0], m[6 * 1 + 1], m[6 * 1 + 2],
+            m[6 * 2 + 0], m[6 * 2 + 1], m[6 * 2 + 2]
+        );
 
-        virtual ~Marker();
+        Ogre::Real eigenvalues[3];
+        Ogre::Vector3 eigenvectors[3];
+        cov_xyz.EigenSolveSymmetric(eigenvalues, eigenvectors);
 
-        void setShowAxes(bool showAxes);
+        if (eigenvalues[0] < 0)
+            eigenvalues[0] = 0;
 
-        void setShowMarker(bool showMarker);
+        if (eigenvalues[1] < 0)
+            eigenvalues[1] = 0;
 
-        void setShowLabel(bool showLabel);
+        if (eigenvalues[2] < 0)
+            eigenvalues[2] = 0;
 
-        virtual void setColor(float r, float g, float b, float a);
 
-        virtual void setOrientation(const Ogre::Quaternion &orientation);
-
-        virtual void setPosition(const Ogre::Vector3 &position);
-
-        virtual void setScale(const Ogre::Vector3 &scale);
-
-        virtual const Ogre::Vector3 &getPosition();
-
-        virtual const Ogre::Quaternion &getOrientation();
-
-        void setUserData(const Ogre::Any &data);
-
-    protected:
-        static MarkerResources static_resources_; // load static resources once for this class
-
-        Ogre::SceneNode *scene_node_;
-
-        Ogre::Entity *markerEntity_;
-        rviz::Axes *axes_;
-        rviz::MovableText *text_;
-        Ogre::SceneNode *text_node_;
-
-    };
+        variance_pos_->setOrientation(Ogre::Quaternion(eigenvectors[0], eigenvectors[1], eigenvectors[2]));
+        variance_pos_->setScale(
+            Ogre::Vector3(
+                fmax(2 * sqrt(eigenvalues[0]), 0.005f), // Try to avoid a complete flat sphere
+                fmax(2 * sqrt(eigenvalues[1]), 0.005f),
+                fmax(2 * sqrt(eigenvalues[2]), 0.005f)
+            )
+        );
+    }
 
 }
-
-
-#endif //MARKER_RVIZ_PLUGIN_MARKER_H

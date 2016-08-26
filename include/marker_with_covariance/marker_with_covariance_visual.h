@@ -31,82 +31,55 @@
 #define MARKER_WITH_COVARIANCE_VISUAL_H
 
 #include <marker_msgs/MarkerWithCovarianceStamped.h>
-#include <rviz/ogre_helpers/arrow.h>
-#include <rviz/ogre_helpers/shape.h>
+#include "ogre_visuals/marker.h"
+#include "ogre_visuals/marker_with_covariance.h"
 
-namespace Ogre
-{
-class Vector3;
-class Quaternion;
+namespace Ogre {
+    class Vector3;
+
+    class Quaternion;
 }
 
-namespace rviz
-{
-class Arrow;
-class Shape;
+namespace rviz {
+    class Axes;
 }
 
-namespace marker_rviz_plugin
-{
+namespace marker_rviz_plugin {
 
-// Declare the visual class for this display.
-class MarkerWithCovarianceVisual
-{
-public:
-  // Constructor.  Creates the visual stuff and puts it into the
-  // scene, but in an unconfigured state.
-  MarkerWithCovarianceVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node );
+    class MarkerWithCovarianceVisual {
+    public:
+        MarkerWithCovarianceVisual(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node);
 
-  // Destructor.  Removes the visual stuff from the scene.
-  virtual ~MarkerWithCovarianceVisual();
+        virtual ~MarkerWithCovarianceVisual();
 
-  // Configure the visual to show the data in the message.
-  void setMessage( const marker_msgs::MarkerWithCovarianceStamped::ConstPtr& msg );
+        // Configure the visual to show the data in the message.
+        void setMessage(const marker_msgs::MarkerWithCovarianceStamped::ConstPtr &msg);
 
-  // Set the pose of the coordinate frame the message refers to.
-  // These could be done inside setMessage(), but that would require
-  // calls to FrameManager and error handling inside setMessage(),
-  // which doesn't seem as clean.  This way MarkerWithCovarianceVisual is
-  // only responsible for visualization.
-  void setFramePosition( const Ogre::Vector3& position );
-  void setFrameOrientation( const Ogre::Quaternion& orientation );
+        // Set the pose of the coordinate frame the message refers to.
+        // These could be done inside setMessage(), but that would require
+        // calls to FrameManager and error handling inside setMessage(),
+        // which doesn't seem as clean.  This way MarkerDetectionVisual is
+        // only responsible for visualization.
+        void setFramePosition(const Ogre::Vector3 &position);
 
-  // Set the scale of the visual, which is an user-editable
-  // parameter and therefore don't come from the MarkerWithCovarianceStamped message.
-  void setScalePose( float scale );
+        void setFrameOrientation(const Ogre::Quaternion &orientation);
 
-  // Set the color of the visual's Pose, which is an user-editable
-  // parameter and therefore don't come from the MarkerWithCovarianceStamped message.
-  void setColorPose( Ogre::ColourValue color );
+        void setShowAxes(bool showAxes);
 
-  // Set the color of the visual's variance, which is an user-editable
-  // parameter and therefore don't come from the MarkerWithCovarianceStamped message.
-  void setColorVariance( Ogre::ColourValue color );
+        void setShowMarker(bool showMarker);
 
-private:
-  // The object implementing the actual pose shape
-  boost::shared_ptr<rviz::Arrow> pose_;
+        void setShowLabel(bool showLabel);
 
-  // The object implementing the actual variance shape
-  boost::shared_ptr<rviz::Shape> variance_;
+    private:
+        boost::shared_ptr<Marker> _marker;
 
-  // A SceneNode whose pose is set to match the coordinate frame of
-  // the Imu message header.
-  Ogre::SceneNode* frame_node_;
+        Ogre::SceneNode *frame_node_;
+        Ogre::SceneManager *scene_manager_;
 
-  // The SceneManager, kept here only so the destructor can ask it to
-  // destroy the ``frame_node_``.
-  Ogre::SceneManager* scene_manager_;
-
-  // The pose Shape object's scale
-  float scale_pose_;
-
-  // The pose Shape object's color
-  Ogre::ColourValue color_pose_;
-
-  // The variance Shape object's color
-  Ogre::ColourValue color_variance_;
-};
+        bool _showAxes;
+        bool _showMarker;
+        bool _showLabel;
+    };
 
 } // end namespace marker_rviz_plugin
 

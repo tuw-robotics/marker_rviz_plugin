@@ -1,23 +1,25 @@
 /*
- * Copyright (c) 2012, Willow Garage, Inc.
+ * Copyright (c) 2016, Lukas Pfeifhofer <lukas.pfeifhofer@devlabs.pro>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the Willow Garage, Inc. nor the names of its
- *       contributors may be used to endorse or promote products derived from
- *       this software without specific prior written permission.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its contributors
+ * may be used to endorse or promote products derived from this software without
+ * specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
  * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
  * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -27,102 +29,85 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <OGRE/OgreManualObject.h>
+#include <OGRE/OgreEntity.h>
+#include <OGRE/OgreMeshManager.h>
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
+
+#include <ros/package.h>
 
 #include <tf/transform_listener.h>
 
 #include <rviz/visualization_manager.h>
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/float_property.h>
+#include <rviz/properties/int_property.h>
+#include <rviz/properties/bool_property.h>
 #include <rviz/frame_manager.h>
+#include "rviz/ogre_helpers/axes.h"
 
 #include "marker_with_covariance/marker_with_covariance_display.h"
 #include "marker_with_covariance/marker_with_covariance_visual.h"
 
 namespace marker_rviz_plugin {
 
-// The constructor must have no arguments, so we can't give the
-// constructor the parameters it needs to fully initialize.
-MarkerWithCovarianceDisplay::MarkerWithCovarianceDisplay() {
-    property_scale_pose_ = new rviz::FloatProperty ( "Scale Pose", 0.4,
-            "Scale of the marker's pose.",
-            this, SLOT ( updateScalePose() ) );
-    property_scale_pose_->setMin ( 0 );
-    property_scale_pose_->setMax ( 1 );
+    MarkerWithCovarianceDisplay::MarkerWithCovarianceDisplay() {
 
-    property_color_pose_ = new rviz::ColorProperty ( "Color Pose", QColor ( 204, 51, 0 ),
-            "Color to draw the marker's pose.",
-            this, SLOT ( updateColorPose() ) );
+        _showAxesProperty = new rviz::BoolProperty("Show Axes", true, "Show or hide axes.", this, SLOT (updateVisual()));
+        _showMarkerProperty = new rviz::BoolProperty("Show Marker", false, "Show or hide marker image.", this, SLOT (updateVisual()));
+        _showLabelProperty = new rviz::BoolProperty("Show Label", true, "Show or hide marker label.", this, SLOT (updateVisual()));
 
-    property_color_variance_ = new rviz::ColorProperty ( "Color Variance", QColor ( 204, 51, 204 ),
-            "Color to draw the marker's variance.",
-            this, SLOT ( updateColorVariance() ) );
-}
+        // Add the plugin orge_media folder to the Ogre ResourceGroup so it is possible to access plugin textures later on
+        std::string rviz_path = ros::package::getPath(ROS_PACKAGE_NAME);
+        Ogre::ResourceGroupManager::getSingleton().addResourceLocation(rviz_path + "/ogre_media", "FileSystem", ROS_PACKAGE_NAME);
+        Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup(ROS_PACKAGE_NAME);
 
-// After the top-level rviz::Display::initialize() does its own setup,
-// it calls the subclass's onInitialize() function.  This is where we
-// instantiate all the workings of the class.  We make sure to also
-// call our immediate super-class's onInitialize() function, since it
-// does important stuff setting up the message filter.
-//
-//  Note that "MFDClass" is a typedef of
-// ``MessageFilterDisplay<message type>``, to save typing that long
-// templated class name every time you need to refer to the
-// superclass.
-void MarkerWithCovarianceDisplay::onInitialize() {
-    MFDClass::onInitialize();
-    visual_.reset ( new MarkerWithCovarianceVisual ( context_->getSceneManager(), scene_node_ ) );
-}
-
-MarkerWithCovarianceDisplay::~MarkerWithCovarianceDisplay() {
-}
-
-// Clear the visual by deleting its object.
-void MarkerWithCovarianceDisplay::reset() {
-    MFDClass::reset();
-}
-
-// Set the current scale for the visual's pose.
-void MarkerWithCovarianceDisplay::updateScalePose() {
-    float scale = property_scale_pose_->getFloat();
-    visual_->setScalePose ( scale );
-}
-
-// Set the current color for the visual's pose.
-void MarkerWithCovarianceDisplay::updateColorPose() {
-    Ogre::ColourValue color = property_color_pose_->getOgreColor();
-    visual_->setColorPose ( color );
-}
-
-// Set the current color for the visual's variance.
-void MarkerWithCovarianceDisplay::updateColorVariance() {
-    Ogre::ColourValue color = property_color_variance_->getOgreColor();
-    visual_->setColorVariance ( color );
-}
-
-// This is our callback to handle an incoming message.
-void MarkerWithCovarianceDisplay::processMessage ( const marker_msgs::MarkerWithCovarianceStamped::ConstPtr& msg ) {
-    // Here we call the rviz::FrameManager to get the transform from the
-    // fixed frame to the frame in the header of this Imu message.  If
-    // it fails, we can't do anything else so we return.
-    Ogre::Quaternion orientation;
-    Ogre::Vector3 position;
-
-    if ( !context_->getFrameManager()->getTransform ( msg->header.frame_id, msg->header.stamp, position, orientation ) ) {
-        ROS_DEBUG ( "Error transforming from frame '%s' to frame '%s'",
-                    msg->header.frame_id.c_str(), qPrintable ( fixed_frame_ ) );
-        return;
     }
 
-    // Now set or update the contents of the visual.
-    visual_->setMessage ( msg );
-    visual_->setFramePosition ( position );
-    visual_->setFrameOrientation ( orientation );
-    visual_->setScalePose ( property_scale_pose_->getFloat() );
-    visual_->setColorPose ( property_color_pose_->getOgreColor() );
-    visual_->setColorVariance ( property_color_variance_->getOgreColor() );
-}
+    void MarkerWithCovarianceDisplay::onInitialize() {
+        MFDClass::onInitialize();
+
+        _visual = new MarkerWithCovarianceVisual(context_->getSceneManager(), scene_node_);
+    }
+
+    MarkerWithCovarianceDisplay::~MarkerWithCovarianceDisplay() {
+    }
+
+// Clear the ogre_visuals by deleting their objects.
+    void MarkerWithCovarianceDisplay::reset() {
+        MFDClass::reset();
+    }
+
+    void MarkerWithCovarianceDisplay::updateVisual() {
+        _visual->setShowAxes(_showAxesProperty->getBool());
+        _visual->setShowMarker(_showMarkerProperty->getBool());
+        _visual->setShowLabel(_showLabelProperty->getBool());
+    }
+
+// This is our callback to handle an incoming message.
+    void MarkerWithCovarianceDisplay::processMessage(const marker_msgs::MarkerWithCovarianceStamped::ConstPtr &msg) {
+
+        // Here we call the rviz::FrameManager to get the transform from the
+        // fixed frame to the frame in the header of this Imu message.  If
+        // it fails, we can't do anything else so we return.
+        Ogre::Quaternion orientation;
+        Ogre::Vector3 position;
+        if (!context_->getFrameManager()->getTransform(msg->header.frame_id, msg->header.stamp, position, orientation)) {
+            ROS_DEBUG ("Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(), qPrintable(fixed_frame_));
+            return;
+        }
+
+        // Now set or update the contents of the chosen visual.
+        _visual->setMessage(msg);
+        _visual->setFramePosition(position);
+        _visual->setFrameOrientation(orientation);
+        _visual->setShowAxes(_showAxesProperty->getBool());
+        _visual->setShowMarker(_showMarkerProperty->getBool());
+        _visual->setShowLabel(_showLabelProperty->getBool());
+
+        context_->queueRender();
+    }
 
 } // end namespace marker_rviz_plugin
 

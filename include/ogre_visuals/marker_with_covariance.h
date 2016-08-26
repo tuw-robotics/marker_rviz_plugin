@@ -29,71 +29,28 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MARKER_RVIZ_PLUGIN_MARKER_H
-#define MARKER_RVIZ_PLUGIN_MARKER_H
+#ifndef MARKER_RVIZ_PLUGIN_MARKER_WITH_COVARIANCE_H
+#define MARKER_RVIZ_PLUGIN_MARKER_WITH_COVARIANCE_H
 
-#include <string>
-#include "rviz/ogre_helpers/object.h"
-#include "rviz/ogre_helpers/axes.h"
-#include "rviz/ogre_helpers/movable_text.h"
-
-namespace Ogre {
-    class SceneManager;
-
-    class SceneNode;
-
-    class Entity;
-}
+#include <boost/array.hpp>
+#include "ogre_visuals/marker.h"
 
 namespace marker_rviz_plugin {
 
-    class MarkerResources {
-    public:
-        MarkerResources();
-
-        ~MarkerResources();
-    };
-
-    class Marker : public rviz::Object {
+    class MarkerWithCovariance : public Marker {
     public:
 
-        Marker(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node = 0, int id = -1);
+        MarkerWithCovariance(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node = 0, int id = -1);
 
-        virtual ~Marker();
+        virtual ~MarkerWithCovariance();
 
-        void setShowAxes(bool showAxes);
-
-        void setShowMarker(bool showMarker);
-
-        void setShowLabel(bool showLabel);
-
-        virtual void setColor(float r, float g, float b, float a);
-
-        virtual void setOrientation(const Ogre::Quaternion &orientation);
-
-        virtual void setPosition(const Ogre::Vector3 &position);
-
-        virtual void setScale(const Ogre::Vector3 &scale);
-
-        virtual const Ogre::Vector3 &getPosition();
-
-        virtual const Ogre::Quaternion &getOrientation();
-
-        void setUserData(const Ogre::Any &data);
+        void setCovarianceMatrix(boost::array<double, 36> m);
 
     protected:
-        static MarkerResources static_resources_; // load static resources once for this class
-
-        Ogre::SceneNode *scene_node_;
-
-        Ogre::Entity *markerEntity_;
-        rviz::Axes *axes_;
-        rviz::MovableText *text_;
-        Ogre::SceneNode *text_node_;
+        rviz::Shape *variance_pos_;
 
     };
 
 }
 
-
-#endif //MARKER_RVIZ_PLUGIN_MARKER_H
+#endif //MARKER_RVIZ_PLUGIN_MARKER_WITH_COVARIANCE_H
