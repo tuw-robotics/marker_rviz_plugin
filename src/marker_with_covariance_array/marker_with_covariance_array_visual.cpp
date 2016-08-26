@@ -1,23 +1,25 @@
 /*
- * Copyright (c) 2012, Willow Garage, Inc.
+ * Copyright (c) 2016, Lukas Pfeifhofer <lukas.pfeifhofer@devlabs.pro>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the Willow Garage, Inc. nor the names of its
- *       contributors may be used to endorse or promote products derived from
- *       this software without specific prior written permission.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its contributors
+ * may be used to endorse or promote products derived from this software without
+ * specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
  * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
  * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -38,106 +40,76 @@
 
 namespace marker_rviz_plugin {
 
-MarkerWithCovarianceArrayVisual::MarkerWithCovarianceArrayVisual ( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node ) {
-    scene_manager_ = scene_manager;
+    MarkerWithCovarianceArrayVisual::MarkerWithCovarianceArrayVisual(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node) {
+        scene_manager_ = scene_manager;
+        frame_node_ = parent_node->createChildSceneNode();
 
-    // Ogre::SceneNode s form a tree, with each node storing the
-    // transform (position and orientation) of itself relative to its
-    // parent.  Ogre does the math of combining those transforms when it
-    // is time to render.
-    //
-    // Here we create a node to store the pose of the MarkerDetection's header frame
-    // relative to the RViz fixed frame.
-    frame_node_ = parent_node->createChildSceneNode();
-}
+        _showAxes = true;
+        _showMarker = true;
+    }
 
-MarkerWithCovarianceArrayVisual::~MarkerWithCovarianceArrayVisual() {
-    // Destroy the frame node since we don't need it anymore.
-    scene_manager_->destroySceneNode ( frame_node_ );
-}
+    MarkerWithCovarianceArrayVisual::~MarkerWithCovarianceArrayVisual() {
+        // Destroy the frame node since we don't need it anymore.
+        scene_manager_->destroySceneNode(frame_node_);
+    }
 
-void MarkerWithCovarianceArrayVisual::setMessage ( const marker_msgs::MarkerWithCovarianceArray::ConstPtr& msg ) {
-    // Arrow points in -Z direction, so rotate the orientation before display.
-    // TODO: is it safe to change Arrow to point in +X direction?
-    Ogre::Quaternion rotation1 = Ogre::Quaternion ( Ogre::Degree( -90 ), Ogre::Vector3::UNIT_Y );
-    Ogre::Quaternion rotation2 = Ogre::Quaternion ( Ogre::Degree( -180 ), Ogre::Vector3::UNIT_X );
-    Ogre::Quaternion rotation = rotation2 * rotation1;
+    void MarkerWithCovarianceArrayVisual::setMessage(const marker_msgs::MarkerWithCovarianceArray::ConstPtr &msg) {
+        _markers.resize(msg->markers.size());
 
-    poses_.resize ( msg->markers.size() );
-    variances_.resize ( msg->markers.size() );
+        for (size_t i = 0; i < msg->markers.size(); i++) {
+            marker_msgs::MarkerWithCovariance marker_cov = msg->markers[i];
+            marker_msgs::Marker marker = marker_cov.marker;
 
-    for ( size_t i = 0; i < msg->markers.size(); i++ ) {
-        // We create the visual objects within the frame node so that we can
-        // set thier position and direction relative to their header frame.
-        poses_[i].reset ( new rviz::Arrow( scene_manager_, frame_node_ ) );
-        variances_[i].reset ( new rviz::Shape ( rviz::Shape::Sphere, scene_manager_, frame_node_ ) );
+            double p_x = marker.pose.position.x;
+            double p_y = marker.pose.position.y;
+            double p_z = marker.pose.position.z;
+            double o_x = marker.pose.orientation.x;
+            double o_y = marker.pose.orientation.y;
+            double o_z = marker.pose.orientation.z;
+            double o_w = marker.pose.orientation.w;
+            int id = marker.ids[0];
 
-        Ogre::Vector3 position = Ogre::Vector3 ( msg->markers[i].marker.pose.position.x, msg->markers[i].marker.pose.position.y, msg->markers[i].marker.pose.position.z );
-        Ogre::Quaternion orientation = Ogre::Quaternion ( msg->markers[i].marker.pose.orientation.x, msg->markers[i].marker.pose.orientation.y, msg->markers[i].marker.pose.orientation.z, msg->markers[i].marker.pose.orientation.w );
-
-        orientation = rotation * orientation;
-
-        poses_[i]->setPosition( position );
-        poses_[i]->setOrientation( orientation );
-
-        Ogre::Matrix3 C = Ogre::Matrix3 ( msg->markers[i].covariance[6*0 + 0], msg->markers[i].covariance[6*0 + 1], msg->markers[i].covariance[6*0 + 5],
-                                          msg->markers[i].covariance[6*1 + 0], msg->markers[i].covariance[6*1 + 1], msg->markers[i].covariance[6*1 + 5],
-                                          msg->markers[i].covariance[6*5 + 0], msg->markers[i].covariance[6*5 + 1], msg->markers[i].covariance[6*5 + 5] );
-        Ogre::Real eigenvalues[3];
-        Ogre::Vector3 eigenvectors[3];
-        C.EigenSolveSymmetric(eigenvalues, eigenvectors);
-        if ( eigenvalues[0] < 0 ) {
-            ROS_WARN ( "[MarkerWithCovarianceArrayVisual setMessage] eigenvalue[0]: %f < 0 ",  eigenvalues[0] );
-            eigenvalues[0] = 0;
+            MarkerWithCovariance *m = new MarkerWithCovariance(scene_manager_, frame_node_, id);
+            m->setPosition(Ogre::Vector3(p_x, p_y, p_z));
+            m->setOrientation(Ogre::Quaternion(o_w, o_x, o_y, o_z));
+            m->setShowMarker(_showMarker);
+            m->setShowAxes(_showAxes);
+            m->setShowLabel(_showLabel);
+            m->setCovarianceMatrix(msg->markers[i].covariance);
+            _markers[i].reset(new Marker(scene_manager_, frame_node_, id));
         }
-        if ( eigenvalues[1] < 0 ) {
-            ROS_WARN ( "[MarkerWithCovarianceArrayVisual setMessage] eigenvalue[1]: %f < 0 ",  eigenvalues[1] );
-            eigenvalues[1] = 0;
-        }
-        if ( eigenvalues[2] < 0 ) {
-            ROS_WARN ( "[MarkerWithCovarianceArrayVisual setMessage] eigenvalue[2]: %f < 0 ",  eigenvalues[2] );
-            eigenvalues[2] = 0;
+    }
+
+    void MarkerWithCovarianceArrayVisual::setFramePosition(const Ogre::Vector3 &position) {
+        frame_node_->setPosition(position);
+    }
+
+    void MarkerWithCovarianceArrayVisual::setFrameOrientation(const Ogre::Quaternion &orientation) {
+        frame_node_->setOrientation(orientation);
+    }
+
+    void MarkerWithCovarianceArrayVisual::setShowAxes(bool showAxes) {
+        for (size_t i = 0; i < _markers.size(); i++) {
+            _markers[i]->setShowAxes(showAxes);
         }
 
-        variances_[i]->setColor ( color_variance_ );
-        variances_[i]->setPosition ( position );
-        variances_[i]->setOrientation ( Ogre::Quaternion ( eigenvectors[0], eigenvectors[1], eigenvectors[2] ) );
-        variances_[i]->setScale ( Ogre::Vector3 ( 2*sqrt(eigenvalues[0]), 2*sqrt(eigenvalues[1]), 2*sqrt(eigenvalues[2]) ) );
+        _showAxes = showAxes;
     }
-}
 
-// Position is passed through to the SceneNode.
-void MarkerWithCovarianceArrayVisual::setFramePosition ( const Ogre::Vector3& position ) {
-    frame_node_->setPosition ( position );
-}
+    void MarkerWithCovarianceArrayVisual::setShowMarker(bool showMarker) {
+        for (size_t i = 0; i < _markers.size(); i++) {
+            _markers[i]->setShowMarker(showMarker);
+        }
 
-// Orientation is passed through to the SceneNode.
-void MarkerWithCovarianceArrayVisual::setFrameOrientation ( const Ogre::Quaternion& orientation ) {
-    frame_node_->setOrientation ( orientation );
-}
-
-// Scale is passed through to the pose Shape object.
-void MarkerWithCovarianceArrayVisual::setScalePose ( float scale ) {
-    for ( size_t i = 0; i < poses_.size(); i++ ) {
-        poses_[i]->setScale ( Ogre::Vector3 ( scale, scale, scale ) );
+        _showMarker = showMarker;
     }
-    scale_pose_ = scale;
-}
 
-// Color is passed through to the pose Shape object.
-void MarkerWithCovarianceArrayVisual::setColorPose ( Ogre::ColourValue color ) {
-    for ( size_t i = 0; i < poses_.size(); i++ ) {
-        poses_[i]->setColor ( color );
-    }
-    color_pose_ = color;
-}
+    void MarkerWithCovarianceArrayVisual::setShowLabel(bool showLabel) {
+        for (size_t i = 0; i < _markers.size(); i++) {
+            _markers[i]->setShowLabel(showLabel);
+        }
 
-// Color is passed through to the variance Shape object.
-void MarkerWithCovarianceArrayVisual::setColorVariance ( Ogre::ColourValue color ) {
-    for ( size_t i = 0; i < variances_.size(); i++ ) {
-        variances_[i]->setColor ( color );
+        _showLabel = showLabel;
     }
-    color_variance_ = color;
-}
 
 } // end namespace marker_rviz_plugin
