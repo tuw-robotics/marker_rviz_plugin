@@ -76,7 +76,7 @@ namespace marker_rviz_plugin {
             m->setShowAxes(_showAxes);
             m->setShowLabel(_showLabel);
             m->setCovarianceMatrix(msg->markers[i].covariance);
-            _markers[i].reset(new Marker(scene_manager_, frame_node_, id));
+            _markers[i].reset(m);
         }
     }
 
