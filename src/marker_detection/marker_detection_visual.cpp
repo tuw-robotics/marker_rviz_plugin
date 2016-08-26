@@ -64,7 +64,10 @@ namespace marker_rviz_plugin {
             double o_y = msg->markers[i].pose.orientation.y;
             double o_z = msg->markers[i].pose.orientation.z;
             double o_w = msg->markers[i].pose.orientation.w;
-            int id = msg->markers[i].ids[0];
+
+            int id = -1;
+            if (msg->markers[i].ids.size() > 0)
+                id = msg->markers[i].ids[0];
 
             _markers[i].reset(new Marker(scene_manager_, frame_node_, id));
             _markers[i]->setPosition(Ogre::Vector3(p_x, p_y, p_z));
