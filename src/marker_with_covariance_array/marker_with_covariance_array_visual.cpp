@@ -67,7 +67,7 @@ namespace marker_rviz_plugin {
             double o_y = marker.pose.orientation.y;
             double o_z = marker.pose.orientation.z;
             double o_w = marker.pose.orientation.w;
-            
+
             int id = -1;
             if (marker.ids.size() > 0)
                 id = marker.ids[0];

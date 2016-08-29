@@ -32,18 +32,36 @@
 #include "ogre_visuals/marker_with_covariance.h"
 #include "rviz/ogre_helpers/shape.h"
 
+#define SHAPE_WIDTH_MIN     0.0025f // Avoid a complete flat sphere/cylinder
+
 namespace marker_rviz_plugin {
 
     MarkerWithCovariance::MarkerWithCovariance(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node, int id)
             : Marker(scene_manager, parent_node, id) {
 
         variance_pos_ = new rviz::Shape(rviz::Shape::Sphere, scene_manager_, scene_node_);
-        variance_pos_->setColor(Ogre::ColourValue(1.0, 1.0, 0.0));
+        variance_pos_->setColor(Ogre::ColourValue(1.0, 1.0, 0.0, 0.9f));
         variance_pos_->getMaterial()->setReceiveShadows(false);
+
+        variance_roll_  = new rviz::Shape(rviz::Shape::Cylinder, scene_manager_, scene_node_);
+        variance_pitch_ = new rviz::Shape(rviz::Shape::Cylinder, scene_manager_, scene_node_);
+        variance_yaw_   = new rviz::Shape(rviz::Shape::Cylinder, scene_manager_, scene_node_);
+
+        Ogre::ColourValue variance_orientation_color = Ogre::ColourValue((170.0/255.0), (85.0/255.0), (255.0/255.0));
+        variance_orientation_color = Ogre::ColourValue((255.0/255.0), (85.0/255.0), (255.0/255.0), 0.6f);
+        variance_roll_->setColor(variance_orientation_color);
+        variance_roll_->getMaterial()->setReceiveShadows(false);
+        variance_pitch_->setColor(variance_orientation_color);
+        variance_pitch_->getMaterial()->setReceiveShadows(false);
+        variance_yaw_->setColor(variance_orientation_color);
+        variance_yaw_->getMaterial()->setReceiveShadows(false);
     }
 
     MarkerWithCovariance::~MarkerWithCovariance() {
         delete variance_pos_;
+        delete variance_roll_;
+        delete variance_pitch_;
+        delete variance_yaw_;
     }
 
     void MarkerWithCovariance::setCovarianceMatrix(boost::array<double, 36> m) {
@@ -70,10 +88,73 @@ namespace marker_rviz_plugin {
         variance_pos_->setOrientation(Ogre::Quaternion(eigenvectors[0], eigenvectors[1], eigenvectors[2]));
         variance_pos_->setScale(
             Ogre::Vector3(
-                fmax(2 * sqrt(eigenvalues[0]), 0.005f), // Try to avoid a complete flat sphere
-                fmax(2 * sqrt(eigenvalues[1]), 0.005f),
-                fmax(2 * sqrt(eigenvalues[2]), 0.005f)
+                fmax(2 * sqrt(eigenvalues[0]), SHAPE_WIDTH_MIN),
+                fmax(2 * sqrt(eigenvalues[1]), SHAPE_WIDTH_MIN),
+                fmax(2 * sqrt(eigenvalues[2]), SHAPE_WIDTH_MIN)
             )
+        );
+
+
+        Ogre::Matrix3 cov_roll = Ogre::Matrix3(
+                m[6 * 4 + 4], m[6 * 4 + 5], 0,
+                m[6 * 5 + 5], m[6 * 5 + 5], 0,
+                0, 0, 0
+        );
+        cov_roll.EigenSolveSymmetric(eigenvalues, eigenvectors);
+
+        Ogre::Quaternion o = Ogre::Quaternion::IDENTITY;
+        o = o * Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3::UNIT_Z);
+        o = o * (Ogre::Quaternion(eigenvectors[0], eigenvectors[1], eigenvectors[2]));
+
+        variance_roll_->setOrientation(o);
+        variance_roll_->setPosition(Ogre::Vector3(0.2f, 0.0f, 0.0f));
+        variance_roll_->setScale(
+                Ogre::Vector3(
+                        fmax(2 * sqrt(eigenvalues[0]), SHAPE_WIDTH_MIN),
+                        SHAPE_WIDTH_MIN,
+                        fmax(2 * sqrt(eigenvalues[1]), SHAPE_WIDTH_MIN)
+                )
+        );
+
+        Ogre::Matrix3 cov_pitch = Ogre::Matrix3(
+                m[6 * 3 + 3], m[6 * 3 + 5], 0,
+                m[6 * 5 + 3], m[6 * 5 + 5], 0,
+                0, 0, 0
+        );
+        cov_pitch.EigenSolveSymmetric(eigenvalues, eigenvectors);
+
+        o = Ogre::Quaternion::IDENTITY;
+        o = o * (Ogre::Quaternion(eigenvectors[0], eigenvectors[1], eigenvectors[2]));
+
+        variance_pitch_->setOrientation(o);
+        variance_pitch_->setPosition(Ogre::Vector3(0.0f, 0.2f, 0.0f));
+        variance_pitch_->setScale(
+                Ogre::Vector3(
+                        fmax(2 * sqrt(eigenvalues[0]), SHAPE_WIDTH_MIN),
+                        SHAPE_WIDTH_MIN,
+                        fmax(2 * sqrt(eigenvalues[1]), SHAPE_WIDTH_MIN)
+                )
+        );
+
+        Ogre::Matrix3 cov_yaw = Ogre::Matrix3(
+                m[6 * 3 + 3], m[6 * 3 + 4], 0,
+                m[6 * 4 + 3], m[6 * 4 + 4], 0,
+                0, 0, 0
+        );
+        cov_yaw.EigenSolveSymmetric(eigenvalues, eigenvectors);
+
+        o = Ogre::Quaternion::IDENTITY;
+        o = o * Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3::UNIT_X);
+        o = o * (Ogre::Quaternion(eigenvectors[0], eigenvectors[1], eigenvectors[2]));
+
+        variance_yaw_->setOrientation(o);
+        variance_yaw_->setPosition(Ogre::Vector3(0.0f, 0.0f, 0.2f));
+        variance_yaw_->setScale(
+                Ogre::Vector3(
+                        fmax(2 * sqrt(eigenvalues[0]), SHAPE_WIDTH_MIN),
+                        SHAPE_WIDTH_MIN,
+                        fmax(2 * sqrt(eigenvalues[1]), SHAPE_WIDTH_MIN)
+                )
         );
     }
 

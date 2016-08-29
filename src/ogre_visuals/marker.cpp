@@ -94,7 +94,7 @@ namespace marker_rviz_plugin {
         text_->setColor(Ogre::ColourValue(0.70, 0.70, 0.70));
 
         text_node_ = scene_node_->createChildSceneNode();
-        text_node_->setPosition(0, 0.18, 0);
+        text_node_->setPosition(0.06, 0.06, 0.10);
         text_node_->attachObject(text_);
     }
 
