@@ -37,9 +37,9 @@ while not rospy.is_shutdown():
     marker.ids.append(1)
     marker.ids_confidence.append(1)
     marker.pose = Pose()
-    marker.pose.position.x = 0.4
-    marker.pose.position.y = 0.3
-    marker.pose.position.z = 0.5
+    marker.pose.position.x = 4.5
+    marker.pose.position.y = 4.0
+    marker.pose.position.z = 0.0
     ori = marker.pose.orientation
     ori.x, ori.y, ori.z, ori.w = tf.transformations.quaternion_from_euler(r, p, y + cos(10 * angle))
     #ori.x, ori.y, ori.z, ori.w = tf.transformations.quaternion_from_euler(0, 0, 0)
@@ -68,7 +68,7 @@ while not rospy.is_shutdown():
 
     marker_with_cov_s.marker = MarkerWithCovariance()
     marker_with_cov_s.marker.marker = markerc
-    marker_with_cov_s.marker.covariance = [0.011241161991539792, -0.011615365449532622, 0.0, 0.0, 0.0, -0.002759911553295745, -0.011615365449532622, 0.01903682230368378, 0.0, 0.0, 0.0, 0.00390837573140233, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00609234839, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00609234839, 0.0, -0.002759911553295745, 0.00390837573140233, 0.0, 0.0, 0.0, 0.05483113556]
+    marker_with_cov_s.marker.covariance = [0.011241161991539792, -0.011615365449532622, 0.0, 0.0, 0.0, -0.002759911553295745, -0.011615365449532622, 0.01903682230368378, 0.0, 0.0, 0.0, 0.00390837573140233, 0.0, 0.0, 0.00203078279, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00203078279, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.00203078279, 0.0, -0.002759911553295745, 0.00390837573140233, 0.0, 0.0, 0.0, 0.01827704518]
 
     publisher_cov.publish( marker_with_cov_s )
 

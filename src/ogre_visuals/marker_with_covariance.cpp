@@ -43,32 +43,24 @@ namespace marker_rviz_plugin {
         variance_pos_->setColor(Ogre::ColourValue(1.0, 1.0, 0.0, 0.9f));
         variance_pos_->getMaterial()->setReceiveShadows(false);
 
-        variance_roll_  = new rviz::Shape(rviz::Shape::Cylinder, scene_manager_, scene_node_);
-        variance_pitch_ = new rviz::Shape(rviz::Shape::Cylinder, scene_manager_, scene_node_);
-        variance_yaw_   = new rviz::Shape(rviz::Shape::Cylinder, scene_manager_, scene_node_);
-
-        Ogre::ColourValue variance_orientation_color = Ogre::ColourValue((170.0/255.0), (85.0/255.0), (255.0/255.0));
-        variance_orientation_color = Ogre::ColourValue((255.0/255.0), (85.0/255.0), (255.0/255.0), 0.6f);
-        variance_roll_->setColor(variance_orientation_color);
-        variance_roll_->getMaterial()->setReceiveShadows(false);
-        variance_pitch_->setColor(variance_orientation_color);
-        variance_pitch_->getMaterial()->setReceiveShadows(false);
-        variance_yaw_->setColor(variance_orientation_color);
-        variance_yaw_->getMaterial()->setReceiveShadows(false);
+        for (int i = 0; i < 3; i++) {
+            variance_rpy_[i] = new rviz::Shape(rviz::Shape::Cylinder, scene_manager_, scene_node_);
+            variance_rpy_[i]->setColor(Ogre::ColourValue((255.0 / 255.0), (85.0 / 255.0), (255.0 / 255.0), 0.6f));
+            variance_rpy_[i]->getMaterial()->setReceiveShadows(false);
+        }
     }
 
     MarkerWithCovariance::~MarkerWithCovariance() {
         delete variance_pos_;
-        delete variance_roll_;
-        delete variance_pitch_;
-        delete variance_yaw_;
+        for (int i = 0; i < 3; i++)
+            delete variance_rpy_[i];
     }
 
     void MarkerWithCovariance::setCovarianceMatrix(boost::array<double, 36> m) {
         Ogre::Matrix3 cov_xyz = Ogre::Matrix3(
-            m[6 * 0 + 0], m[6 * 0 + 1], m[6 * 0 + 2],
-            m[6 * 1 + 0], m[6 * 1 + 1], m[6 * 1 + 2],
-            m[6 * 2 + 0], m[6 * 2 + 1], m[6 * 2 + 2]
+                m[6 * 0 + 0], m[6 * 0 + 1], m[6 * 0 + 2],
+                m[6 * 1 + 0], m[6 * 1 + 1], m[6 * 1 + 2],
+                m[6 * 2 + 0], m[6 * 2 + 1], m[6 * 2 + 2]
         );
 
         Ogre::Real eigenvalues[3];
@@ -87,14 +79,15 @@ namespace marker_rviz_plugin {
 
         variance_pos_->setOrientation(Ogre::Quaternion(eigenvectors[0], eigenvectors[1], eigenvectors[2]));
         variance_pos_->setScale(
-            Ogre::Vector3(
-                fmax(2 * sqrt(eigenvalues[0]), SHAPE_WIDTH_MIN),
-                fmax(2 * sqrt(eigenvalues[1]), SHAPE_WIDTH_MIN),
-                fmax(2 * sqrt(eigenvalues[2]), SHAPE_WIDTH_MIN)
-            )
+                Ogre::Vector3(
+                        fmax(2 * sqrt(eigenvalues[0]), SHAPE_WIDTH_MIN),
+                        fmax(2 * sqrt(eigenvalues[1]), SHAPE_WIDTH_MIN),
+                        fmax(2 * sqrt(eigenvalues[2]), SHAPE_WIDTH_MIN)
+                )
         );
 
 
+        // Roll
         Ogre::Matrix3 cov_roll = Ogre::Matrix3(
                 m[6 * 4 + 4], m[6 * 4 + 5], 0,
                 m[6 * 5 + 5], m[6 * 5 + 5], 0,
@@ -106,9 +99,9 @@ namespace marker_rviz_plugin {
         o = o * Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3::UNIT_Z);
         o = o * (Ogre::Quaternion(eigenvectors[0], eigenvectors[1], eigenvectors[2]));
 
-        variance_roll_->setOrientation(o);
-        variance_roll_->setPosition(Ogre::Vector3(0.2f, 0.0f, 0.0f));
-        variance_roll_->setScale(
+        variance_rpy_[0]->setOrientation(o);
+        variance_rpy_[0]->setPosition(Ogre::Vector3(0.2f, 0.0f, 0.0f));
+        variance_rpy_[0]->setScale(
                 Ogre::Vector3(
                         fmax(2 * sqrt(eigenvalues[0]), SHAPE_WIDTH_MIN),
                         SHAPE_WIDTH_MIN,
@@ -116,6 +109,7 @@ namespace marker_rviz_plugin {
                 )
         );
 
+        // Pitch
         Ogre::Matrix3 cov_pitch = Ogre::Matrix3(
                 m[6 * 3 + 3], m[6 * 3 + 5], 0,
                 m[6 * 5 + 3], m[6 * 5 + 5], 0,
@@ -126,9 +120,9 @@ namespace marker_rviz_plugin {
         o = Ogre::Quaternion::IDENTITY;
         o = o * (Ogre::Quaternion(eigenvectors[0], eigenvectors[1], eigenvectors[2]));
 
-        variance_pitch_->setOrientation(o);
-        variance_pitch_->setPosition(Ogre::Vector3(0.0f, 0.2f, 0.0f));
-        variance_pitch_->setScale(
+        variance_rpy_[1]->setOrientation(o);
+        variance_rpy_[1]->setPosition(Ogre::Vector3(0.0f, 0.2f, 0.0f));
+        variance_rpy_[1]->setScale(
                 Ogre::Vector3(
                         fmax(2 * sqrt(eigenvalues[0]), SHAPE_WIDTH_MIN),
                         SHAPE_WIDTH_MIN,
@@ -136,6 +130,7 @@ namespace marker_rviz_plugin {
                 )
         );
 
+        // Yaw
         Ogre::Matrix3 cov_yaw = Ogre::Matrix3(
                 m[6 * 3 + 3], m[6 * 3 + 4], 0,
                 m[6 * 4 + 3], m[6 * 4 + 4], 0,
@@ -147,9 +142,9 @@ namespace marker_rviz_plugin {
         o = o * Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3::UNIT_X);
         o = o * (Ogre::Quaternion(eigenvectors[0], eigenvectors[1], eigenvectors[2]));
 
-        variance_yaw_->setOrientation(o);
-        variance_yaw_->setPosition(Ogre::Vector3(0.0f, 0.0f, 0.2f));
-        variance_yaw_->setScale(
+        variance_rpy_[2]->setOrientation(o);
+        variance_rpy_[2]->setPosition(Ogre::Vector3(0.0f, 0.0f, 0.2f));
+        variance_rpy_[2]->setScale(
                 Ogre::Vector3(
                         fmax(2 * sqrt(eigenvalues[0]), SHAPE_WIDTH_MIN),
                         SHAPE_WIDTH_MIN,

@@ -88,7 +88,11 @@ namespace marker_rviz_plugin {
         axes_ = new rviz::Axes(scene_manager_, scene_node_, 0.2, 0.02);
 
         std::stringstream ss;
-        ss << "#" << id;
+        if (id >= 0) {
+            ss << "#" << id;
+        } else {
+            ss << "-";
+        }
         text_ = new rviz::MovableText(ss.str(), "Arial", 0.1);
         text_->setTextAlignment(rviz::MovableText::H_CENTER, rviz::MovableText::V_BELOW);
         text_->setColor(Ogre::ColourValue(0.70, 0.70, 0.70));

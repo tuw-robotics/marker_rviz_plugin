@@ -52,6 +52,8 @@ namespace marker_rviz_plugin {
         rviz::Shape *variance_pitch_;
         rviz::Shape *variance_yaw_;
 
+        rviz::Shape *variance_rpy_[3];
+
     };
 
 }
