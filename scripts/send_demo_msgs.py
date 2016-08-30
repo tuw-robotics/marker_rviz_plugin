@@ -11,7 +11,7 @@ import tf_conversions
 publisher_detection = rospy.Publisher( 'marker_detection', MarkerDetection, queue_size=5 )
 publisher_cov = rospy.Publisher( 'marker_with_cov', MarkerWithCovarianceStamped, queue_size=5 )
 
-rospy.init_node( 'test_covariance' )
+rospy.init_node( 'test_marker_covariance' )
 
 br = tf.TransformBroadcaster()
 

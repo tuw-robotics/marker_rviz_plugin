@@ -32,6 +32,9 @@
 #include "ogre_visuals/marker_with_covariance.h"
 #include "rviz/ogre_helpers/shape.h"
 
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreSceneNode.h>
+
 #define SHAPE_WIDTH_MIN     0.0025f // Avoid a complete flat sphere/cylinder
 
 namespace marker_rviz_plugin {
@@ -39,7 +42,7 @@ namespace marker_rviz_plugin {
     MarkerWithCovariance::MarkerWithCovariance(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node, int id)
             : Marker(scene_manager, parent_node, id) {
 
-        variance_pos_ = new rviz::Shape(rviz::Shape::Sphere, scene_manager_, scene_node_);
+        variance_pos_ = new rviz::Shape(rviz::Shape::Sphere, scene_manager_, scene_node_->getParentSceneNode());
         variance_pos_->setColor(Ogre::ColourValue(1.0, 1.0, 0.0, 0.9f));
         variance_pos_->getMaterial()->setReceiveShadows(false);
 
@@ -78,6 +81,7 @@ namespace marker_rviz_plugin {
 
 
         variance_pos_->setOrientation(Ogre::Quaternion(eigenvectors[0], eigenvectors[1], eigenvectors[2]));
+        variance_pos_->setPosition(scene_node_->getPosition());
         variance_pos_->setScale(
                 Ogre::Vector3(
                         fmax(2 * sqrt(eigenvalues[0]), SHAPE_WIDTH_MIN),
@@ -97,7 +101,10 @@ namespace marker_rviz_plugin {
 
         Ogre::Quaternion o = Ogre::Quaternion::IDENTITY;
         o = o * Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3::UNIT_Z);
-        o = o * (Ogre::Quaternion(eigenvectors[0], eigenvectors[1], eigenvectors[2]));
+        o = o * Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3::UNIT_Y);
+        o = o * (Ogre::Quaternion(Ogre::Matrix3(1, 0, 0,
+                                                0, eigenvectors[0][0], eigenvectors[0][1],
+                                                0, eigenvectors[1][0], eigenvectors[1][1])));
 
         variance_rpy_[0]->setOrientation(o);
         variance_rpy_[0]->setPosition(Ogre::Vector3(0.2f, 0.0f, 0.0f));
@@ -118,7 +125,10 @@ namespace marker_rviz_plugin {
         cov_pitch.EigenSolveSymmetric(eigenvalues, eigenvectors);
 
         o = Ogre::Quaternion::IDENTITY;
-        o = o * (Ogre::Quaternion(eigenvectors[0], eigenvectors[1], eigenvectors[2]));
+        o = o * Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3::UNIT_Y);
+        o = o * (Ogre::Quaternion(Ogre::Matrix3(eigenvectors[0][0], 0, eigenvectors[0][1],
+                                                0, 1, 0,
+                                                0, eigenvectors[1][0], eigenvectors[1][1])));
 
         variance_rpy_[1]->setOrientation(o);
         variance_rpy_[1]->setPosition(Ogre::Vector3(0.0f, 0.2f, 0.0f));
@@ -140,7 +150,9 @@ namespace marker_rviz_plugin {
 
         o = Ogre::Quaternion::IDENTITY;
         o = o * Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3::UNIT_X);
-        o = o * (Ogre::Quaternion(eigenvectors[0], eigenvectors[1], eigenvectors[2]));
+        o = o * (Ogre::Quaternion(Ogre::Matrix3(eigenvectors[0][0], eigenvectors[0][1], 0,
+                                                eigenvectors[1][0], eigenvectors[1][1], 0,
+                                                0, 0, 1)));
 
         variance_rpy_[2]->setOrientation(o);
         variance_rpy_[2]->setPosition(Ogre::Vector3(0.0f, 0.0f, 0.2f));

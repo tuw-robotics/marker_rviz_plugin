@@ -48,10 +48,6 @@ namespace marker_rviz_plugin {
 
     protected:
         rviz::Shape *variance_pos_;
-        rviz::Shape *variance_roll_;
-        rviz::Shape *variance_pitch_;
-        rviz::Shape *variance_yaw_;
-
         rviz::Shape *variance_rpy_[3];
 
     };
