@@ -98,6 +98,8 @@ namespace marker_rviz_plugin {
         rviz::BoolProperty *_showAxesProperty;
         rviz::BoolProperty *_showMarkerProperty;
         rviz::BoolProperty *_showLabelProperty;
+        rviz::FloatProperty *_visualScaleProperty;
+        rviz::FloatProperty *_markerSizeProperty;
 
         MarkerWithCovarianceArrayVisual *_visual;
     };

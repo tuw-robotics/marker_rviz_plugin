@@ -58,6 +58,12 @@ namespace marker_rviz_plugin {
         _showMarkerProperty = new rviz::BoolProperty("Show Marker", true, "Show or hide marker image.", this, SLOT (updateVisual()));
         _showLabelProperty = new rviz::BoolProperty("Show Label", true, "Show or hide marker label.", this, SLOT (updateVisual()));
 
+        _visualScaleProperty = new rviz::FloatProperty("Scale", 1, "Scale of the marker visual.", this, SLOT (updateVisual()));
+        _visualScaleProperty->setMin(0);
+
+        _markerSizeProperty = new rviz::FloatProperty("Marker Size", 0.3, "Size of the marker image.", this, SLOT (updateVisual()));
+        _markerSizeProperty->setMin(0);
+
         // Add the plugin orge_media folder to the Ogre ResourceGroup so it is possible to access plugin textures later on
         std::string rviz_path = ros::package::getPath(ROS_PACKAGE_NAME);
         Ogre::ResourceGroupManager::getSingleton().addResourceLocation(rviz_path + "/ogre_media", "FileSystem", ROS_PACKAGE_NAME);
@@ -105,6 +111,8 @@ namespace marker_rviz_plugin {
         _visual->setShowAxes(_showAxesProperty->getBool());
         _visual->setShowMarker(_showMarkerProperty->getBool());
         _visual->setShowLabel(_showLabelProperty->getBool());
+        _visual->setScale(_visualScaleProperty->getFloat());
+        _visual->setMarkerSize(_markerSizeProperty->getFloat());
 
         context_->queueRender();
     }

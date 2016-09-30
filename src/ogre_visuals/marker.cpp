@@ -50,7 +50,7 @@ namespace marker_rviz_plugin {
         Ogre::MeshManager::getSingleton().createPlane("imagePlane",
                                                       Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
                                                       imagePlane,
-                                                      0.3, 0.3,
+                                                      1.0, 1.0,
                                                       1, 1, true, 1,
                                                       1.0, 1.0,
                                                       Ogre::Vector3::UNIT_X);
@@ -80,10 +80,12 @@ namespace marker_rviz_plugin {
 
         scene_node_ = parent_node->createChildSceneNode();
 
+        markerNode_ = scene_node_->createChildSceneNode();
         markerEntity_ = scene_manager_->createEntity("imagePlane");
         markerEntity_->setCastShadows(false);
         markerEntity_->setMaterialName("imagePlaneMaterial");
-        scene_node_->attachObject(markerEntity_);
+        markerNode_->attachObject(markerEntity_);
+        markerNode_->setScale(0.3, 0.3, 0.3);
 
         axes_ = new rviz::Axes(scene_manager_, scene_node_, 0.2, 0.02);
 
@@ -105,6 +107,9 @@ namespace marker_rviz_plugin {
     Marker::~Marker() {
         delete axes_;
         delete text_;
+
+        if(markerNode_)
+            scene_manager_->destroySceneNode(markerNode_);
 
         if (markerEntity_)
             scene_manager_->destroyEntity(markerEntity_);
@@ -136,6 +141,10 @@ namespace marker_rviz_plugin {
 
     void Marker::setScale(const Ogre::Vector3 &scale) {
         scene_node_->setScale(scale);
+    }
+
+    void Marker::setMarkerSize(float markerSize) {
+        markerNode_->setScale(markerSize, markerSize, markerSize);
     }
 
     const Ogre::Vector3 &Marker::getPosition() {

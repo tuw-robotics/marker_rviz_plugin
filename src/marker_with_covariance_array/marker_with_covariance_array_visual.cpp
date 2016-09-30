@@ -78,6 +78,8 @@ namespace marker_rviz_plugin {
             m->setShowMarker(_showMarker);
             m->setShowAxes(_showAxes);
             m->setShowLabel(_showLabel);
+            m->setScale(Ogre::Vector3(_scale, _scale, _scale));
+            m->setMarkerSize(_markerSize);
             m->setCovarianceMatrix(msg->markers[i].covariance);
             _markers[i].reset(m);
         }
@@ -113,6 +115,22 @@ namespace marker_rviz_plugin {
         }
 
         _showLabel = showLabel;
+    }
+
+    void MarkerWithCovarianceArrayVisual::setScale(float scale) {
+        for (size_t i = 0; i < _markers.size(); i++) {
+            _markers[i]->setScale(Ogre::Vector3(scale, scale, scale));
+        }
+
+        _scale = scale;
+    }
+
+    void MarkerWithCovarianceArrayVisual::setMarkerSize(float markerSize) {
+        for (size_t i = 0; i < _markers.size(); i++) {
+            _markers[i]->setMarkerSize(markerSize);
+        }
+
+        _markerSize = markerSize;
     }
 
 } // end namespace marker_rviz_plugin
