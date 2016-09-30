@@ -2,8 +2,8 @@
 Changelog for package marker_rviz_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2016-09-30)
+------------------
 * Fixed covariance orientation bugs. It seems to work correctly now. (At least for the few axis used in the stage and gazebo slam demo.)
 * Added rviz config for send_demo_msg.py demo script.
 * Code cleanup.
