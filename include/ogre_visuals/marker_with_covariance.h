@@ -33,6 +33,7 @@
 #define MARKER_RVIZ_PLUGIN_MARKER_WITH_COVARIANCE_H
 
 #include <boost/array.hpp>
+#include <Ogre.h>
 #include "ogre_visuals/marker.h"
 
 namespace marker_rviz_plugin {
@@ -44,9 +45,12 @@ namespace marker_rviz_plugin {
 
         virtual ~MarkerWithCovariance();
 
-        void setCovarianceMatrix(boost::array<double, 36> m);
+        virtual void setCovarianceMatrix(boost::array<double, 36> m);
+
+        virtual void setScale(const Ogre::Vector3 &scale);
 
     protected:
+        Ogre::SceneNode *variance_pos_parent;
         rviz::Shape *variance_pos_;
         rviz::Shape *variance_rpy_[3];
 

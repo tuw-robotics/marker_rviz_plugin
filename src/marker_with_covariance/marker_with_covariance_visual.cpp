@@ -46,6 +46,8 @@ namespace marker_rviz_plugin {
 
         _showAxes = true;
         _showMarker = true;
+        _showLabel = true;
+        _scale = 1;
     }
 
     MarkerWithCovarianceVisual::~MarkerWithCovarianceVisual() {
@@ -75,6 +77,7 @@ namespace marker_rviz_plugin {
         m->setShowMarker(_showMarker);
         m->setShowAxes(_showAxes);
         m->setShowLabel(_showLabel);
+        m->setScale(Ogre::Vector3(_scale, _scale, _scale));
         m->setCovarianceMatrix(msg->marker.covariance);
         _marker.reset(m);
     }
@@ -100,6 +103,11 @@ namespace marker_rviz_plugin {
     void MarkerWithCovarianceVisual::setShowLabel(bool showLabel) {
         _marker->setShowLabel(showLabel);
         _showLabel = showLabel;
+    }
+
+    void MarkerWithCovarianceVisual::setScale(float scale) {
+        _marker->setScale(Ogre::Vector3(scale, scale, scale));
+        _scale = scale;
     }
 
 }

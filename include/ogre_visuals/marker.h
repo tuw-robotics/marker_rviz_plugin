@@ -85,6 +85,7 @@ namespace marker_rviz_plugin {
         static MarkerResources static_resources_; // load static resources once for this class
 
         Ogre::SceneNode *scene_node_;
+        Ogre::SceneNode *markerNode_;
 
         Ogre::Entity *markerEntity_;
         rviz::Axes *axes_;

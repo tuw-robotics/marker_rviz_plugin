@@ -46,6 +46,8 @@ namespace marker_rviz_plugin {
 
         _showAxes = true;
         _showMarker = true;
+        _showLabel = true;
+        _scale = 1;
     }
 
     MarkerDetectionVisual::~MarkerDetectionVisual() {
@@ -75,6 +77,7 @@ namespace marker_rviz_plugin {
             _markers[i]->setShowMarker(_showMarker);
             _markers[i]->setShowAxes(_showAxes);
             _markers[i]->setShowLabel(_showLabel);
+            _markers[i]->setScale(Ogre::Vector3(_scale, _scale, _scale));
         }
     }
 
@@ -108,6 +111,14 @@ namespace marker_rviz_plugin {
         }
 
         _showLabel = showLabel;
+    }
+
+    void MarkerDetectionVisual::setScale(float scale) {
+        for (size_t i = 0; i < _markers.size(); i++) {
+            _markers[i]->setScale(Ogre::Vector3(scale, scale, scale));
+        }
+
+        _scale = scale;
     }
 
 }

@@ -50,7 +50,7 @@ namespace marker_rviz_plugin {
         Ogre::MeshManager::getSingleton().createPlane("imagePlane",
                                                       Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
                                                       imagePlane,
-                                                      0.3, 0.3,
+                                                      1.0, 1.0,
                                                       1, 1, true, 1,
                                                       1.0, 1.0,
                                                       Ogre::Vector3::UNIT_X);
@@ -80,12 +80,14 @@ namespace marker_rviz_plugin {
 
         scene_node_ = parent_node->createChildSceneNode();
 
+        markerNode_ = scene_node_->createChildSceneNode();
         markerEntity_ = scene_manager_->createEntity("imagePlane");
         markerEntity_->setCastShadows(false);
         markerEntity_->setMaterialName("imagePlaneMaterial");
-        scene_node_->attachObject(markerEntity_);
+        markerNode_->attachObject(markerEntity_);
+        markerNode_->setScale(1.0, 1.0, 1.0);
 
-        axes_ = new rviz::Axes(scene_manager_, scene_node_, 0.2, 0.02);
+        axes_ = new rviz::Axes(scene_manager_, scene_node_, 0.7, 0.07);
 
         std::stringstream ss;
         if (id >= 0) {
@@ -93,18 +95,21 @@ namespace marker_rviz_plugin {
         } else {
             ss << "-";
         }
-        text_ = new rviz::MovableText(ss.str(), "Arial", 0.1);
+        text_ = new rviz::MovableText(ss.str(), "Arial", 0.4);
         text_->setTextAlignment(rviz::MovableText::H_CENTER, rviz::MovableText::V_BELOW);
         text_->setColor(Ogre::ColourValue(0.70, 0.70, 0.70));
 
         text_node_ = scene_node_->createChildSceneNode();
-        text_node_->setPosition(0.06, 0.06, 0.10);
+        text_node_->setPosition(0.20, 0.20, 0.30);
         text_node_->attachObject(text_);
     }
 
     Marker::~Marker() {
         delete axes_;
         delete text_;
+
+        if(markerNode_)
+            scene_manager_->destroySceneNode(markerNode_);
 
         if (markerEntity_)
             scene_manager_->destroyEntity(markerEntity_);
