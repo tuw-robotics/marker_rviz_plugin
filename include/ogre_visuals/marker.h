@@ -75,8 +75,6 @@ namespace marker_rviz_plugin {
 
         virtual void setScale(const Ogre::Vector3 &scale);
 
-        virtual void setMarkerSize(float markerSize);
-
         virtual const Ogre::Vector3 &getPosition();
 
         virtual const Ogre::Quaternion &getOrientation();
@@ -85,11 +83,10 @@ namespace marker_rviz_plugin {
 
     protected:
         static MarkerResources static_resources_; // load static resources once for this class
-        
+
         Ogre::SceneNode *scene_node_;
 
         Ogre::Entity *markerEntity_;
-        Ogre::SceneNode *markerNode_;
         rviz::Axes *axes_;
         rviz::MovableText *text_;
         Ogre::SceneNode *text_node_;

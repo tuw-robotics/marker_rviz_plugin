@@ -71,10 +71,6 @@ namespace marker_rviz_plugin {
 
         void setShowLabel(bool showLabel);
 
-        void setScale(float scale);
-
-        void setMarkerSize(float markerSize);
-
     private:
         std::vector<boost::shared_ptr<Marker> > _markers;
 
@@ -84,8 +80,6 @@ namespace marker_rviz_plugin {
         bool _showAxes;
         bool _showMarker;
         bool _showLabel;
-        float _scale;
-        float _markerSize;
     };
 
 } // end namespace marker_rviz_plugin
