@@ -261,7 +261,7 @@ install(DIRECTORY media/
 install(DIRECTORY icons/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/icons
 )
-install(PROGRAMS scripts/send_test_msgs.py
+install(PROGRAMS scripts/send_demo_msgs.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 #############
