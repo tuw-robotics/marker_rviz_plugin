@@ -61,9 +61,9 @@ namespace marker_rviz_plugin {
         _markerSizeProperty = new rviz::FloatProperty("Marker Size", 0.3, "Size of the marker image.", this, SLOT (updateVisual()));
         _markerSizeProperty->setMin(0);
 
-        // Add the plugin orge_media folder to the Ogre ResourceGroup so it is possible to access plugin textures later on
+        // Add the plugin media folder to the Ogre ResourceGroup so it is possible to access plugin textures later on
         std::string rviz_path = ros::package::getPath(ROS_PACKAGE_NAME);
-        Ogre::ResourceGroupManager::getSingleton().addResourceLocation(rviz_path + "/ogre_media", "FileSystem", ROS_PACKAGE_NAME);
+        Ogre::ResourceGroupManager::getSingleton().addResourceLocation(rviz_path + "/media", "FileSystem", ROS_PACKAGE_NAME);
         Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup(ROS_PACKAGE_NAME);
 
     }

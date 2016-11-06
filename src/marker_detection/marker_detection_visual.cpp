@@ -47,6 +47,7 @@ namespace marker_rviz_plugin {
         _showAxes = true;
         _showMarker = true;
         _showLabel = true;
+    	_colorLabel  = Ogre::ColourValue ( 0, 170, 0 );
         _scale = 1;
     }
 
@@ -77,6 +78,7 @@ namespace marker_rviz_plugin {
             _markers[i]->setShowMarker(_showMarker);
             _markers[i]->setShowAxes(_showAxes);
             _markers[i]->setShowLabel(_showLabel);
+            _markers[i]->setColorLabel(_colorLabel);
             _markers[i]->setScale(Ogre::Vector3(_scale, _scale, _scale));
         }
     }
@@ -111,6 +113,12 @@ namespace marker_rviz_plugin {
         }
 
         _showLabel = showLabel;
+    }
+    void MarkerDetectionVisual::setColorLabel(Ogre::ColourValue color) {
+	_colorLabel = color;
+        for (size_t i = 0; i < _markers.size(); i++) {
+            _markers[i]->setColorLabel(_colorLabel);
+        }
     }
 
     void MarkerDetectionVisual::setScale(float scale) {

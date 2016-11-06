@@ -63,7 +63,7 @@ namespace marker_rviz_plugin {
         planeMaterial->getTechnique(0)->setLightingEnabled(false);
 
         Ogre::TextureUnitState *tu = planeMaterial->getTechnique(0)->getPass(0)->createTextureUnitState();
-        tu->setTextureName("textures/marker_icon.png");
+        tu->setTextureName("textures/marker_rect_icon.png");
         tu->setTextureFiltering(Ogre::TFO_NONE);
         tu->setAlphaOperation(Ogre::LBX_SOURCE1, Ogre::LBS_MANUAL, Ogre::LBS_CURRENT, 0.0);
     }
@@ -127,6 +127,9 @@ namespace marker_rviz_plugin {
 
     void Marker::setShowLabel(bool showLabel) {
         text_node_->setVisible(showLabel);
+    }
+    void Marker::setColorLabel(Ogre::ColourValue color) {
+        text_->setColor(color);
     }
 
     void Marker::setColor(float r, float g, float b, float a) {}

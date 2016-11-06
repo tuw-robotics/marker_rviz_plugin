@@ -66,6 +66,8 @@ namespace marker_rviz_plugin {
         void setShowMarker(bool showMarker);
 
         void setShowLabel(bool showLabel);
+	
+        void setColorLabel(Ogre::ColourValue color);
 
         virtual void setColor(float r, float g, float b, float a);
 

@@ -98,6 +98,7 @@ namespace marker_rviz_plugin {
         rviz::BoolProperty *_showAxesProperty;
         rviz::BoolProperty *_showMarkerProperty;
         rviz::BoolProperty *_showLabelProperty;
+	rviz::ColorProperty* _colourLabelProperty;
         rviz::FloatProperty *_markerSizeProperty;
 
         MarkerDetectionVisual *_visual;
