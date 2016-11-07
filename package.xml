@@ -7,7 +7,7 @@
 
   <url type="website">http://wiki.ros.org/marker_rviz_plugin</url>
   <author>Markus Bader</author>
-  <author>Markus Pfeifhofer</author>
+  <author>Lukas Pfeifhofer</author>
   <author>Markus Macsek</author>
 
   <buildtool_depend>catkin</buildtool_depend>
