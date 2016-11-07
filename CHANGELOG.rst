@@ -2,8 +2,8 @@
 Changelog for package marker_rviz_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2016-11-07)
+------------------
 * Lable color change able.
 * Implemented scale and marker size property for all marker visual types.
 * Contributors: Markus Bader, Lukas Pfeifhofer

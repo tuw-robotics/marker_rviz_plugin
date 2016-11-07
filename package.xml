@@ -1,6 +1,6 @@
 <package>
   <name>marker_rviz_plugin</name>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>The marker_rviz_plugin package contains RViz plugins to visualize messages of the marker_msgs package using RViz.</description>
   <maintainer email="markus.bader@tuwien.ac.at">Markus Bader</maintainer>
   <license>BSD</license>
