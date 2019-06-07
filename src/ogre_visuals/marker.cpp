@@ -95,7 +95,7 @@ namespace marker_rviz_plugin {
         } else {
             ss << "-";
         }
-        text_ = new rviz::MovableText(ss.str(), "Arial", 0.4);
+        text_ = new rviz::MovableText(ss.str(), "Liberation Sans", 0.4);
         text_->setTextAlignment(rviz::MovableText::H_CENTER, rviz::MovableText::V_BELOW);
         text_->setColor(Ogre::ColourValue(0.70, 0.70, 0.70));
 
